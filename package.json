@@ -29,6 +29,8 @@
 		"@nestjs/schedule": "^6.1.1",
 		"@nestjs/typeorm": "^10.0.2",
 		"@nestjs/websockets": "^10.4.22",
+		"axios": "^1.13.5",
+		"class-validator": "^0.14.3",
 		"crypto": "^1.0.1",
 		"pg": "^8.18.0",
 		"reflect-metadata": "^0.1.14",

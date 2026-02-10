@@ -1,37 +1,43 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, CreateDateColumn, Index } from 'typeorm';
+import {
+	Entity,
+	PrimaryGeneratedColumn,
+	Column,
+	CreateDateColumn,
+	UpdateDateColumn,
+	Index,
+} from 'typeorm';
 
-import { Bill } from '../bills/bills.entity';
+import { PaymentStatus } from './enums/payment-status.enum';
 
-@Entity()
-@Index(['restaurantId', 'yocoPaymentId'], { unique: true })
+@Entity('payments')
+@Index(['restaurantId'])
+@Index(['billId'])
+@Index(['status'])
 export class Payment {
+
 	@PrimaryGeneratedColumn('uuid')
 	id: string;
+
+	/*
+	================================
+	MULTI TENANT
+	================================
+	*/
 
 	@Column()
 	@Index()
 	restaurantId: string;
 
 	@Column()
+	@Index()
 	billId: string;
 
-	@ManyToOne(() => Bill, bill => bill.payments, {
-		onDelete: 'CASCADE',
-	})
-	bill: Bill;
+	/*
+	================================
+	AMOUNT
+	================================
+	*/
 
-	// Yoco identifiers
-	@Column({
-		nullable: true,
-	})
-	yocoPaymentId: string;
-
-	@Column({
-		nullable: true,
-	})
-	yocoCheckoutId: string;
-
-	// Amount paid
 	@Column({
 		type: 'decimal',
 		precision: 10,
@@ -39,23 +45,60 @@ export class Payment {
 	})
 	amount: number;
 
-	// Payment status
 	@Column({
-		default: 'PENDING',
+		default: 'ZAR',
 	})
-	status: 'PENDING' | 'SUCCESS' | 'FAILED';
+	currency: string;
 
-	// Items covered in this payment
+	/*
+	================================
+	STATUS
+	================================
+	*/
+
+	@Column({
+		type: 'enum',
+		enum: PaymentStatus,
+		default: PaymentStatus.PENDING,
+	})
+	status: PaymentStatus;
+
+	/*
+	================================
+	PROVIDER INFO
+	================================
+	*/
+
+	@Column({ nullable: true })
+	provider: string; // YOCO
+
+	@Column({ nullable: true })
+	providerPaymentId: string;
+
+	@Column({ nullable: true })
+	checkoutId: string;
+
+	/*
+	================================
+	METADATA
+	================================
+	*/
+
 	@Column({
 		type: 'jsonb',
 		nullable: true,
 	})
-	billItemIds: string[];
+	metadata: any;
 
-	// Audit
+	/*
+	================================
+	AUDIT
+	================================
+	*/
+
 	@CreateDateColumn()
 	createdAt: Date;
 
-	@Column()
-	externalId: string;
+	@UpdateDateColumn()
+	updatedAt: Date;
 }

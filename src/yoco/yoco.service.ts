@@ -1,52 +1,80 @@
-import { Injectable, BadRequestException, NotFoundException, Logger } from '@nestjs/common';
+import { Injectable, BadRequestException } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
 
+import { Repository, In } from 'typeorm';
 import axios from 'axios';
 
-import { PaymentsService } from '../payments/payments.service';
-import { BillSplitsService } from '../bill-splits/bill-splits.service';
-import { SocketGateway } from '../websocket/websocket.gateway';
+import { Payment } from '../payments/payment.entity';
+import { Bill } from '../bills/bills.entity';
+import { BillItem } from '../bills/bill-item.entity';
 
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
-import { YocoToken } from './yoco-token.entity';
+import { SocketGateway } from '../websocket/websocket.gateway';
+import { LightspeedService } from '../lightspeed/lightspeed.service';
 
 @Injectable()
 export class YocoService {
-	private readonly logger = new Logger(YocoService.name);
-
 	constructor(
-		private paymentsService: PaymentsService,
-		private billSplitsService: BillSplitsService,
+		@InjectRepository(Payment)
+		private paymentRepo: Repository<Payment>,
+
+		@InjectRepository(Bill)
+		private billRepo: Repository<Bill>,
+
+		@InjectRepository(BillItem)
+		private itemRepo: Repository<BillItem>,
+
 		private socketGateway: SocketGateway,
 
-		@InjectRepository(YocoToken)
-		private yocoTokenRepo: Repository<YocoToken>,
-	) {}
+		private lightspeedService: LightspeedService,
+	) { }
 
 	/*
-	============================================
-	CREATE PAYMENT
-	============================================
+	==========================================
+	CREATE YOCO CHECKOUT SESSION
+	==========================================
 	*/
+	async createCheckout(dto: { restaurantId: string; billId: string; itemIds: string[] }) {
+		const items = await this.itemRepo.find({
+			where: {
+				id: In(dto.itemIds),
+				restaurantId: dto.restaurantId,
+				paid: false,
+			},
+		});
 
-	async createPayment(params: { restaurantId: string; billId: string; splitId?: string; amount: number; currency?: string }) {
-		const token = await this.getRestaurantToken(params.restaurantId);
+		if (!items.length) throw new BadRequestException('Items already paid');
+
+		const amount = items.reduce((sum, item) => sum + Number(item.total), 0);
+
+		const payment = this.paymentRepo.create({
+			restaurantId: dto.restaurantId,
+			billId: dto.billId,
+			amount,
+			status: 'PENDING',
+
+			metadata: {
+				itemIds: dto.itemIds,
+			},
+		});
+
+		await this.paymentRepo.save(payment);
 
 		const response = await axios.post(
 			'https://payments.yoco.com/api/checkouts',
 			{
-				amount: Math.round(params.amount * 100),
-				currency: params.currency || 'ZAR',
+				amount: Math.round(amount * 100),
+				currency: 'ZAR',
+
+				successUrl: `${process.env.FRONTEND_URL}/success`,
+				cancelUrl: `${process.env.FRONTEND_URL}/cancel`,
 
 				metadata: {
-					restaurantId: params.restaurantId,
-					billId: params.billId,
-					splitId: params.splitId || null,
+					paymentId: payment.id,
 				},
 			},
 			{
 				headers: {
-					Authorization: `Bearer ${token.secretKey}`,
+					Authorization: `Bearer ${process.env.YOCO_SECRET_KEY}`,
 				},
 			},
 		);
@@ -58,93 +86,54 @@ export class YocoService {
 	}
 
 	/*
-	============================================
-	HANDLE WEBHOOK
-	============================================
+	==========================================
+	HANDLE SUCCESSFUL PAYMENT
+	==========================================
 	*/
-
-	async handleWebhook(event: any) {
-		try {
-			this.logger.log(`Yoco webhook received: ${event.type}`);
-
-			if (event.type !== 'payment.succeeded') {
-				return;
-			}
-
-			const paymentData = event.payload;
-
-			const metadata = paymentData.metadata;
-
-			if (!metadata?.restaurantId || !metadata?.billId) {
-				throw new BadRequestException('Missing metadata');
-			}
-
-			// prevent duplicate payment
-			const existing = await this.paymentsService.findByExternalId(paymentData.id);
-
-			if (existing) {
-				this.logger.warn(`Duplicate payment ignored: ${paymentData.id}`);
-				return existing;
-			}
-
-			/*
-			============================================
-			CREATE PAYMENT RECORD
-			============================================
-			*/
-
-			const payment = await this.paymentsService.create({
-				restaurantId: metadata.restaurantId,
-				billId: metadata.billId,
-				amount: paymentData.amount / 100,
-				provider: 'YOCO',
-				status: 'SUCCESS',
-				externalId: paymentData.id,
-			});
-
-			/*
-			============================================
-			UPDATE SPLIT IF EXISTS
-			============================================
-			*/
-
-			if (metadata.splitId) {
-				await this.billSplitsService.markPaid(metadata.splitId, payment.id);
-			}
-
-			/*
-			============================================
-			EMIT REALTIME EVENT
-			============================================
-			*/
-
-			this.socketGateway.emitPaymentUpdate(metadata.restaurantId, payment);
-
-			this.logger.log(`Payment processed: ${payment.id}`);
-
-			return payment;
-		} catch (error) {
-			this.logger.error('Yoco webhook error', error.stack);
-
-			throw error;
-		}
-	}
-
-	/*
-	============================================
-	GET RESTAURANT YOCO TOKEN
-	============================================
-	*/
-
-	private async getRestaurantToken(restaurantId: string): Promise<YocoToken> {
-		const token = await this.yocoTokenRepo.findOne({
-			where: { restaurantId },
+	async handlePaymentSuccess(paymentId: string) {
+		const payment = await this.paymentRepo.findOne({
+			where: { id: paymentId },
 		});
 
-		if (!token) {
-			throw new NotFoundException(`Yoco token not found for restaurant ${restaurantId}`);
-		}
+		if (!payment) return;
 
-		return token;
+		payment.status = 'SUCCESS';
+		await this.paymentRepo.save(payment);
+
+		const itemIds = payment.billItemIds;
+
+		await this.itemRepo.update(
+			{ id: In(itemIds) },
+			{
+				paid: true,
+				paidAt: new Date(),
+				paymentId: payment.id,
+			},
+		);
+
+		const bill = await this.billRepo.findOne({
+			where: {
+				id: payment.billId,
+			},
+			relations: ['items'],
+		});
+
+		/*
+		==========================================
+		MARK ITEMS PAID IN LIGHTSPEED
+		==========================================
+		*/
+
+		await this.lightspeedService.markItemsPaid(bill.restaurantId, bill.lightspeedSaleId, itemIds);
+
+		/*
+		==========================================
+		SOCKET EVENTS
+		==========================================
+		*/
+
+		this.socketGateway.emitPaymentCompleted(bill.restaurantId, bill.id, payment);
+
+		this.socketGateway.emitBillUpdated(bill.restaurantId, bill.id, bill);
 	}
 }

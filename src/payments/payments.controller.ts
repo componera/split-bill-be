@@ -1,17 +1,23 @@
-import { Controller, Post, Body } from '@nestjs/common';
+import { Controller, Get, Param } from '@nestjs/common';
+
 import { PaymentsService } from './payments.service';
 
 @Controller('payments')
 export class PaymentsController {
-	constructor(private payments: PaymentsService) {}
+	constructor(private paymentsService: PaymentsService) { }
 
-	@Post('create')
-	async createPayment(@Body() body: { restaurantId: string; billId: string; itemIds: string[] }) {
-		return this.payments.createYocoPayment(body.restaurantId, body.billId, body.itemIds);
+	@Get(':id')
+	getPayment(@Param('id') id: string) {
+		return this.paymentsService.findById(id);
 	}
 
-	@Post('webhook')
-	async webhook(@Body() body: any) {
-		return this.payments.handleYocoWebhook(body);
+	@Get('bill/:billId')
+	getBillPayments(@Param('billId') billId: string) {
+		return this.paymentsService.findByBill(billId);
+	}
+
+	@Get('restaurant/:restaurantId')
+	getRestaurantPayments(@Param('restaurantId') restaurantId: string) {
+		return this.paymentsService.findByRestaurant(restaurantId);
 	}
 }
