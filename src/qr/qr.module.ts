@@ -1,4 +1,4 @@
-import Module from 'module';
+import { Module } from '@nestjs/common';
 import { QrController } from './qr.controller';
 import { QrService } from './qr.service';
 

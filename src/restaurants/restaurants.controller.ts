@@ -7,7 +7,7 @@ import { ConnectYocoDto } from './dto/connect-yoco.dto';
 
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { Bill } from '../bills/bills.entity';
+import { Bill } from '../bills/entities/bill.entity';
 
 @Controller('restaurants')
 export class RestaurantsController {

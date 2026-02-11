@@ -1,7 +1,9 @@
 import { TypeOrmModule } from '@nestjs/typeorm';
-import Module from 'module';
-import { BillSplit } from './bill-split.entity';
+import { Module } from '@nestjs/common';
+import { BillSplit } from './entities/bill-split.entity';
 import { BillSplitsService } from './bill-splits.service';
+import { PaymentsModule } from 'src/payments/payments.module';
+import { BillSplitsController } from './bill-splits.controller';
 
 @Module({
 	imports: [TypeOrmModule.forFeature([BillSplit]), PaymentsModule],

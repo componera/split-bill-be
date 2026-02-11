@@ -5,7 +5,7 @@ import { CreatePaymentDto } from './dto/create-payment.dto';
 
 @Controller('yoco')
 export class YocoController {
-	constructor(private yocoService: YocoService) { }
+	constructor(private yocoService: YocoService) {}
 
 	@Post('checkout')
 	createCheckout(@Body() dto: CreatePaymentDto) {

@@ -5,7 +5,7 @@ import { Repository, In } from 'typeorm';
 import axios from 'axios';
 
 import { Payment } from '../payments/payment.entity';
-import { Bill } from '../bills/bills.entity';
+import { Bill } from '../bills/entities/bill.entity';
 import { BillItem } from '../bills/bill-item.entity';
 
 import { SocketGateway } from '../websocket/websocket.gateway';
@@ -26,7 +26,7 @@ export class YocoService {
 		private socketGateway: SocketGateway,
 
 		private lightspeedService: LightspeedService,
-	) { }
+	) {}
 
 	/*
 	==========================================

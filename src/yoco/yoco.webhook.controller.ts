@@ -5,19 +5,14 @@ import { YocoService } from './yoco.service';
 
 @Controller('yoco/webhook')
 export class YocoWebhookController {
+	constructor(private yocoService: YocoService) {}
 
-    constructor(private yocoService: YocoService) { }
+	@Post()
+	async webhook(@Body() body: any) {
+		if (body.type === 'payment.succeeded') {
+			await this.yocoService.handlePaymentSuccess(body.metadata.paymentId);
+		}
 
-    @Post()
-    async webhook(@Body() body: any) {
-
-        if (body.type === 'payment.succeeded') {
-
-            await this.yocoService.handlePaymentSuccess(
-                body.metadata.paymentId,
-            );
-        }
-
-        return { received: true };
-    }
+		return { received: true };
+	}
 }

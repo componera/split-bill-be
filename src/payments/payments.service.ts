@@ -10,13 +10,12 @@ import { SocketGateway } from '../websocket/websocket.gateway';
 
 @Injectable()
 export class PaymentsService {
-
 	constructor(
 		@InjectRepository(Payment)
 		private paymentRepo: Repository<Payment>,
 
 		private socketGateway: SocketGateway,
-	) { }
+	) {}
 
 	/*
 	==========================================
@@ -24,7 +23,6 @@ export class PaymentsService {
 	==========================================
 	*/
 	async create(data: Partial<Payment>) {
-
 		const payment = this.paymentRepo.create({
 			...data,
 			status: PaymentStatus.PENDING,
@@ -39,7 +37,6 @@ export class PaymentsService {
 	==========================================
 	*/
 	async markSuccess(paymentId: string) {
-
 		const payment = await this.paymentRepo.findOne({
 			where: { id: paymentId },
 		});
@@ -50,11 +47,7 @@ export class PaymentsService {
 
 		await this.paymentRepo.save(payment);
 
-		this.socketGateway.emitPaymentCompleted(
-			payment.restaurantId,
-			payment.billId,
-			payment,
-		);
+		this.socketGateway.emitPaymentCompleted(payment.restaurantId, payment.billId, payment);
 
 		return payment;
 	}
@@ -65,7 +58,6 @@ export class PaymentsService {
 	==========================================
 	*/
 	async markFailed(paymentId: string) {
-
 		await this.paymentRepo.update(
 			{ id: paymentId },
 			{
@@ -80,7 +72,6 @@ export class PaymentsService {
 	==========================================
 	*/
 	async findById(id: string) {
-
 		return this.paymentRepo.findOne({
 			where: { id },
 		});
@@ -92,7 +83,6 @@ export class PaymentsService {
 	==========================================
 	*/
 	async findByBill(billId: string) {
-
 		return this.paymentRepo.find({
 			where: { billId },
 			order: { createdAt: 'DESC' },
@@ -105,7 +95,6 @@ export class PaymentsService {
 	==========================================
 	*/
 	async findByRestaurant(restaurantId: string) {
-
 		return this.paymentRepo.find({
 			where: { restaurantId },
 			order: { createdAt: 'DESC' },

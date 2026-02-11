@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { LightspeedService } from './lightspeed.service';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { Bill } from '../bills/bills.entity';
+import { Bill } from '../bills/entities/bill.entity';
 import { BillItem } from '../bills/bill-item.entity';
 import * as QRCode from 'qrcode';
 import { SocketGateway } from 'src/websocket/websocket.gateway';

@@ -4,7 +4,7 @@ import { PaymentsService } from './payments.service';
 
 @Controller('payments')
 export class PaymentsController {
-	constructor(private paymentsService: PaymentsService) { }
+	constructor(private paymentsService: PaymentsService) {}
 
 	@Get(':id')
 	getPayment(@Param('id') id: string) {

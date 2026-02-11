@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { BillSplit } from './bill-split.entity';
+import { BillSplit } from './entities/bill-split.entity';
 
 @Injectable()
 export class BillSplitsService {

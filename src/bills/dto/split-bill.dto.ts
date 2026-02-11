@@ -1,9 +1,6 @@
 import { IsArray, IsUUID } from 'class-validator';
 
-export class CreatePaymentDto {
-	@IsUUID()
-	restaurantId: string;
-
+export class SplitItemsDto {
 	@IsUUID()
 	billId: string;
 

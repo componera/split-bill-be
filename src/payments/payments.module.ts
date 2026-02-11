@@ -9,18 +9,9 @@ import { Payment } from './payment.entity';
 import { SocketGateway } from '../websocket/websocket.gateway';
 
 @Module({
-    imports: [
-        TypeOrmModule.forFeature([Payment]),
-    ],
-    providers: [
-        PaymentsService,
-        SocketGateway,
-    ],
-    controllers: [
-        PaymentsController,
-    ],
-    exports: [
-        PaymentsService,
-    ],
+	imports: [TypeOrmModule.forFeature([Payment])],
+	providers: [PaymentsService, SocketGateway],
+	controllers: [PaymentsController],
+	exports: [PaymentsService],
 })
-export class PaymentsModule { }
+export class PaymentsModule {}
