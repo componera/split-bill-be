@@ -28,4 +28,4 @@ import { YocoModule } from './modules/yoco/yoco.module';
 		WebsocketModule,
 	],
 })
-export class AppModule { }
+export class AppModule {}

@@ -4,12 +4,13 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, In } from 'typeorm';
 import axios from 'axios';
 
-import { Payment } from '../payments/payment.entity';
+import { Payment } from '../payments/entities/payment.entity';
 import { Bill } from '../bills/entities/bill.entity';
-import { BillItem } from '../bills/bill-item.entity';
+import { BillItem } from '../bills/entities/bill-item.entity';
 
-import { SocketGateway } from '../websocket/websocket.gateway';
+import { SocketGateway } from '../../websocket/websocket.gateway';
 import { LightspeedService } from '../lightspeed/lightspeed.service';
+import { PaymentStatus } from '../payments/enums/payment-status.enum';
 
 @Injectable()
 export class YocoService {
@@ -26,7 +27,7 @@ export class YocoService {
 		private socketGateway: SocketGateway,
 
 		private lightspeedService: LightspeedService,
-	) {}
+	) { }
 
 	/*
 	==========================================
@@ -37,20 +38,22 @@ export class YocoService {
 		const items = await this.itemRepo.find({
 			where: {
 				id: In(dto.itemIds),
-				restaurantId: dto.restaurantId,
-				paid: false,
+				isPaid: false,
+				bill: { restaurantId: dto.restaurantId }, // <- via relation
 			},
+			relations: ['bill'],
 		});
+
 
 		if (!items.length) throw new BadRequestException('Items already paid');
 
-		const amount = items.reduce((sum, item) => sum + Number(item.total), 0);
+		const amount = items.reduce((sum, item) => sum + Number(item.price), 0);
 
 		const payment = this.paymentRepo.create({
 			restaurantId: dto.restaurantId,
 			billId: dto.billId,
 			amount,
-			status: 'PENDING',
+			status: PaymentStatus.PENDING,
 
 			metadata: {
 				itemIds: dto.itemIds,

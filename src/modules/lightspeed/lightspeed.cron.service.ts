@@ -13,7 +13,7 @@ export class LightspeedCronService {
 		private lightspeedTokenRepo: Repository<LightspeedToken>,
 
 		private syncService: LightspeedSyncService,
-	) { }
+	) {}
 
 	@Cron(CronExpression.EVERY_30_SECONDS)
 	async syncAllRestaurants() {

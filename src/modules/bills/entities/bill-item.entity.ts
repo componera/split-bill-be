@@ -11,6 +11,9 @@ export class BillItem {
 	@Column()
 	name: string;
 
+	@Column({ default: 1 })
+	quantity: number;
+
 	@Column('decimal', { precision: 10, scale: 2 })
 	price: number;
 

@@ -15,4 +15,4 @@ import { SocketGateway } from '../../websocket/websocket.gateway';
 	controllers: [BillsController],
 	exports: [BillsService],
 })
-export class BillsModule { }
+export class BillsModule {}

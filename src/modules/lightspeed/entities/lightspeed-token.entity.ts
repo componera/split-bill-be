@@ -1,13 +1,17 @@
-import { Entity, PrimaryGeneratedColumn, Column, Index } from 'typeorm';
-
+// src/modules/restaurants/entities/lightspeed-token.entity.ts
+import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn, CreateDateColumn, UpdateDateColumn } from 'typeorm';
+import { Restaurant } from '../../restaurants/entities/restaurant.entity';
 @Entity()
 export class LightspeedToken {
 	@PrimaryGeneratedColumn('uuid')
 	id: string;
 
-	@Index()
 	@Column()
 	restaurantId: string;
+
+	@ManyToOne(() => Restaurant, restaurant => restaurant.lightspeedTokens)
+	@JoinColumn({ name: 'restaurantId' })
+	restaurant: Restaurant;
 
 	@Column()
 	accessToken: string;
@@ -15,21 +19,15 @@ export class LightspeedToken {
 	@Column()
 	refreshToken: string;
 
-	@Column()
-	expiresAt: Date;
-
-	@Column({ nullable: true })
-	accountId: string;
-
-	@Column({ nullable: true })
-	createdAt: Date;
-
-	@Column({ nullable: true })
-	updatedAt: Date;
+	@Column({ type: 'timestamptz', nullable: true })
+	expiresAt?: Date;
 
 	@Column({ default: true })
 	isActive: boolean;
 
-	@Column({ nullable: true })
-	lastSyncAt: Date;
+	@CreateDateColumn()
+	createdAt: Date;
+
+	@UpdateDateColumn()
+	updatedAt: Date;
 }

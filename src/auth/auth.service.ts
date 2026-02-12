@@ -11,7 +11,7 @@ export class AuthService {
 		private jwtService: JwtService,
 		@InjectRepository(User)
 		private users: Repository<User>,
-	) { }
+	) {}
 
 	async login(email: string, password: string) {
 		const user = await this.users.findOne({ where: { email } });

@@ -3,10 +3,10 @@ import { InjectRepository } from '@nestjs/typeorm';
 
 import { Repository } from 'typeorm';
 
-import { Payment } from './payment.entity';
+import { Payment } from './entities/payment.entity';
 import { PaymentStatus } from './enums/payment-status.enum';
 
-import { SocketGateway } from '../websocket/websocket.gateway';
+import { SocketGateway } from '../../websocket/websocket.gateway';
 
 @Injectable()
 export class PaymentsService {

@@ -1,10 +1,4 @@
-import {
-    Entity,
-    PrimaryGeneratedColumn,
-    Column,
-    ManyToOne,
-    JoinColumn,
-} from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn } from 'typeorm';
 
 import { Restaurant } from '../../restaurants/entities/restaurant.entity';
 
@@ -18,6 +12,9 @@ export enum UserRole {
 export class User {
     @PrimaryGeneratedColumn('uuid')
     id: string;
+
+    @Column()
+    name: string;
 
     @Column({ unique: true })
     email: string;

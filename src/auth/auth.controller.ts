@@ -8,7 +8,7 @@ export class AuthController {
 	constructor(
 		private authService: AuthService,
 		private jwtService: JwtService,
-	) { }
+	) {}
 
 	@Post('login')
 	async login(@Body() dto: any, @Res({ passthrough: true }) res: Response) {

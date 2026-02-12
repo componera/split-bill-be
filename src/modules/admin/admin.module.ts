@@ -8,14 +8,9 @@ import { Bill } from '../bills/entities/bill.entity';
 import { Payment } from '../payments/entities/payment.entity';
 
 @Module({
-    imports: [
-        TypeOrmModule.forFeature([
-            Bill,
-            Payment,
-        ]),
-    ],
-    controllers: [AdminController],
-    providers: [AdminService],
-    exports: [AdminService],
+	imports: [TypeOrmModule.forFeature([Bill, Payment])],
+	controllers: [AdminController],
+	providers: [AdminService],
+	exports: [AdminService],
 })
-export class AdminModule { }
+export class AdminModule {}

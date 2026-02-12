@@ -1,6 +1,8 @@
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, Index } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, Index, JoinColumn, ManyToOne } from 'typeorm';
 
 import { PaymentStatus } from '../enums/payment-status.enum';
+import { Bill } from 'src/modules/bills/entities/bill.entity';
+import { Restaurant } from 'src/modules/restaurants/entities/restaurant.entity';
 
 @Entity('payments')
 @Index(['restaurantId'])
@@ -16,13 +18,14 @@ export class Payment {
 	================================
 	*/
 
-	@Column()
-	@Index()
-	restaurantId: string;
+	@ManyToOne(() => Bill)
+	@JoinColumn({ name: 'billId' })
+	bill: Bill;
 
-	@Column()
-	@Index()
-	billId: string;
+	@ManyToOne(() => Restaurant)
+	@JoinColumn({ name: 'restaurantId' })
+	restaurant: Restaurant;
+
 
 	/*
 	================================

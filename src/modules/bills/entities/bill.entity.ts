@@ -1,4 +1,6 @@
-import { Entity, PrimaryGeneratedColumn, Column, OneToMany, CreateDateColumn, UpdateDateColumn } from 'typeorm';
+// src/modules/bills/entities/bill.entity.ts
+import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, OneToMany, CreateDateColumn, UpdateDateColumn } from 'typeorm';
+import { Restaurant } from '../../restaurants/entities/restaurant.entity';
 import { BillItem } from './bill-item.entity';
 
 @Entity()
@@ -9,14 +11,17 @@ export class Bill {
 	@Column()
 	restaurantId: string;
 
-	@Column()
-	lightspeedSaleId: string;
+	@ManyToOne(() => Restaurant, restaurant => restaurant.bills)
+	restaurant: Restaurant;
+
+	@Column({ nullable: true })
+	lightspeedSaleId?: string;
 
 	@Column({ nullable: true })
 	tableNumber?: string;
 
-	@Column()
-	status: 'OPEN' | 'CLOSED';
+	@Column({ default: 'OPEN' })
+	status: 'OPEN' | 'CLOSED' | 'PAID';
 
 	@Column({ nullable: true })
 	qrCode?: string;

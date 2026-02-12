@@ -10,4 +10,4 @@ import { BillSplitsController } from './bill-splits.controller';
 	providers: [BillSplitsService],
 	controllers: [BillSplitsController],
 })
-export class BillSplitsModule { }
+export class BillSplitsModule {}

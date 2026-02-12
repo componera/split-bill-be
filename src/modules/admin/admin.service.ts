@@ -14,7 +14,7 @@ export class AdminService {
 
 		@InjectRepository(Payment)
 		private paymentRepo: Repository<Payment>,
-	) { }
+	) {}
 
 	async getStats(restaurantId: string) {
 		const activeBills = await this.billRepo.count({

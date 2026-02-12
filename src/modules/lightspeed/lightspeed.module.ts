@@ -16,4 +16,4 @@ import { LightspeedController } from './lightspeed.controller';
 	controllers: [LightspeedController],
 	exports: [LightspeedService],
 })
-export class LightspeedModule { }
+export class LightspeedModule {}

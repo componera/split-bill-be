@@ -1,10 +1,13 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { BadRequestException, Injectable, Logger } from '@nestjs/common';
 import axios from 'axios';
 import { LightspeedOAuthService } from './lightspeed.oauth.service';
-import { Repository } from 'typeorm';
+import { In, Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { LightspeedToken } from './entities/lightspeed-token.entity';
 import { BillItem } from '../bills/entities/bill-item.entity';
+import { PaymentStatus } from '../payments/enums/payment-status.enum';
+import { Payment } from '../payments/entities/payment.entity';
+import { SocketGateway } from 'src/websocket/websocket.gateway';
 
 @Injectable()
 export class LightspeedService {
@@ -13,11 +16,16 @@ export class LightspeedService {
 	constructor(
 		private oauth: LightspeedOAuthService,
 
+		private socketGateway: SocketGateway
+
 		@InjectRepository(LightspeedToken)
 		private tokenRepo: Repository<LightspeedToken>,
 
 		@InjectRepository(BillItem)
 		private billItemRepo: Repository<BillItem>,
+
+		@InjectRepository(Payment)
+		private paymentRepo: Repository<Payment>,
 	) { }
 
 	async getAccessToken(restaurantId: string) {
@@ -64,44 +72,39 @@ export class LightspeedService {
 		}
 	}
 
-	/*
- ========================================
- MARK ITEMS PAID
- ========================================
- */
+	async markItemsPaid(
+		restaurantId: string,
+		lightspeedSaleId: string,
+		paidItemIds: string[],
+	) {
+		// STEP 0: Get Lightspeed access token
+		const tokenEntity = await this.getAccessToken(restaurantId);
+		const accessToken = tokenEntity; // assume token entity has accessToken field
 
-	async markItemsPaid(restaurantId: string, lightspeedSaleId: string, paidItemIds: string[]) {
-		const token = await this.getAccessToken(restaurantId);
-
-		/*
-		STEP 1: Mark items paid in your own database
-		*/
-
-		await this.billItemRepo.update(
-			{
-				lightspeedItemId: paidItemIds as any,
-			},
-			{
-				isPaid: true,
-			},
-		);
-
-		/*
-		STEP 2: Calculate total amount of paid items
-		*/
-
+		// STEP 1: Load items safely, only from this restaurant and not already paid
 		const items = await this.billItemRepo.find({
 			where: {
-				lightspeedItemId: paidItemIds as any,
+				lightspeedItemId: In(paidItemIds),
+				isPaid: false,
+				bill: { restaurantId }, // ensure multi-tenant safety
 			},
+			relations: ['bill'],
 		});
 
-		const totalAmount = items.reduce((sum, item) => sum + Number(item.price), 0);
+		if (items.length !== paidItemIds.length) {
+			throw new BadRequestException('Some items are invalid, already paid, or do not belong to this restaurant.');
+		}
 
-		/*
-		STEP 3: Register payment with Lightspeed
-		*/
+		// STEP 2: Mark items as paid
+		for (const item of items) {
+			item.isPaid = true;
+		}
+		await this.billItemRepo.save(items);
 
+		// STEP 3: Calculate total
+		const totalAmount = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
+
+		// STEP 4: Register payment with Lightspeed
 		await axios.post(
 			`${process.env.LIGHTSPEED_API_URL}/sales/${lightspeedSaleId}/payments`,
 			{
@@ -110,17 +113,26 @@ export class LightspeedService {
 				method: 'external',
 			},
 			{
-				headers: {
-					Authorization: `Bearer ${token}`,
-				},
+				headers: { Authorization: `Bearer ${accessToken}` },
 			},
 		);
 
-		this.logger.log(`Marked items paid for sale ${lightspeedSaleId}`);
-
-		return {
-			success: true,
+		// STEP 5: Optionally create local Payment entity for auditing
+		const payment = this.paymentRepo.create({
+			bill: { id: items[0].bill.id },
+			restaurant: { id: restaurantId },
 			amount: totalAmount,
-		};
+			status: PaymentStatus.SUCCESS,
+			metadata: { itemIds: paidItemIds },
+		});
+		await this.paymentRepo.save(payment);
+
+		// STEP 6: Emit WS updates
+		this.socketGateway.emitPaymentCompleted(restaurantId, items[0].bill.id, payment);
+
+		this.logger.log(`Marked items paid for sale ${lightspeedSaleId}: R${totalAmount}`);
+
+		return { success: true, amount: totalAmount };
 	}
+
 }

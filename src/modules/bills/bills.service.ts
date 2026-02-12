@@ -1,12 +1,9 @@
-// src/modules/bills/bills.service.ts
-
-import { Injectable, BadRequestException, NotFoundException } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, In } from 'typeorm';
-
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { Bill } from './entities/bill.entity';
+import { InjectRepository } from '@nestjs/typeorm';
+import { SocketGateway } from 'src/websocket/websocket.gateway';
+import { Repository, In } from 'typeorm';
 import { BillItem } from './entities/bill-item.entity';
-import { SocketGateway } from '../../websocket/websocket.gateway';
 
 @Injectable()
 export class BillsService {
@@ -18,7 +15,7 @@ export class BillsService {
 		private itemRepo: Repository<BillItem>,
 
 		private socketGateway: SocketGateway,
-	) { }
+	) {}
 
 	/*
 	Customer selects items to pay
@@ -40,7 +37,6 @@ export class BillsService {
 
 		if (items.length !== itemIds.length) throw new BadRequestException('Invalid items');
 
-		// Validate items not already paid or selected
 		for (const item of items) {
 			if (item.isPaid) throw new BadRequestException(`Item already paid: ${item.name}`);
 
@@ -55,13 +51,12 @@ export class BillsService {
 
 		await this.itemRepo.save(items);
 
-		// Reload bill
+		// Reload bill with updated items
 		const updatedBill = await this.billRepo.findOne({
 			where: { id: billId },
 			relations: ['items'],
 		});
 
-		// Emit realtime update
 		this.socketGateway.emitBillUpdated(bill.restaurantId, bill.id, updatedBill);
 
 		return updatedBill;
@@ -71,16 +66,7 @@ export class BillsService {
 	Release selected items (optional timeout or cancel)
 	*/
 	async releaseSelectedItems(billId: string, customerId: string) {
-		await this.itemRepo.update(
-			{
-				billId,
-				selectedBy: customerId,
-			},
-			{
-				selectedBy: null,
-				selectedAt: null,
-			},
-		);
+		await this.itemRepo.update({ billId, selectedBy: customerId }, { selectedBy: null, selectedAt: null });
 
 		const bill = await this.billRepo.findOne({
 			where: { id: billId },
@@ -90,5 +76,38 @@ export class BillsService {
 		this.socketGateway.emitBillUpdated(bill.restaurantId, bill.id, bill);
 
 		return bill;
+	}
+
+	/*
+	Find a bill by ID
+	*/
+	async findById(billId: string): Promise<Bill> {
+		const bill = await this.billRepo.findOne({
+			where: { id: billId },
+			relations: ['items'],
+		});
+
+		if (!bill) throw new NotFoundException('Bill not found');
+
+		return bill;
+	}
+
+	/*
+	Find all bills for a restaurant
+	*/
+	async findRestaurantBills(restaurantId: string): Promise<Bill[]> {
+		return this.billRepo.find({
+			where: { restaurantId },
+			relations: ['items'],
+			order: { createdAt: 'DESC' },
+		});
+	}
+
+	/*
+	Create a new bill
+	*/
+	async create(dto: Partial<Bill>): Promise<Bill> {
+		const newBill = this.billRepo.create(dto); // type-safe creation
+		return this.billRepo.save(newBill);
 	}
 }

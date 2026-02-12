@@ -1,7 +1,7 @@
-import { Controller, UseGuards, Post, Body, Get, Param } from "@nestjs/common";
-import { JwtAuthGuard } from "src/auth/guards/jwt-auth.guard";
-import { RestaurantGuard } from "src/auth/guards/restaurant.guard";
-import { BillsService } from "./bills.service";
+import { Controller, UseGuards, Post, Body, Get, Param } from '@nestjs/common';
+import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
+import { RestaurantGuard } from 'src/auth/guards/restaurant.guard';
+import { BillsService } from './bills.service';
 
 @Controller('bills')
 @UseGuards(JwtAuthGuard, RestaurantGuard)

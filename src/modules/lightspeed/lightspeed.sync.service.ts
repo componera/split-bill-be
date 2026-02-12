@@ -21,7 +21,7 @@ export class LightspeedSyncService {
 		private items: Repository<BillItem>,
 
 		private socketGateway: SocketGateway,
-	) { }
+	) {}
 
 	/**
 	 * Upsert a Bill and its items from Lightspeed Sale
