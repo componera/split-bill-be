@@ -1,39 +1,70 @@
-import { Injectable } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Restaurant } from 'src/restaurants/restaurants.entity';
-import { Repository } from 'typeorm';
+import { Injectable, UnauthorizedException } from "@nestjs/common";
+import { JwtService } from "@nestjs/jwt";
+import { InjectRepository } from "@nestjs/typeorm";
+import { User } from "src/modules/users/entities/user.entity";
+import { Repository } from "typeorm";
 
 @Injectable()
 export class AuthService {
 	constructor(
-		@InjectRepository(Restaurant)
-		private restaurants: Repository<Restaurant>,
 		private jwtService: JwtService,
-	) {}
+		@InjectRepository(User)
+		private users: Repository<User>,
+	) { }
 
-	async register(dto) {
-		const restaurant = await this.restaurants.save({
-			name: dto.name,
-			email: dto.email,
-			password: dto.password,
-		});
+	async login(email: string, password: string) {
+		const user = await this.users.findOne({ where: { email } });
 
-		return this.generateToken(restaurant);
+		if (!user) throw new UnauthorizedException();
+
+		const valid = await bcrypt.compare(password, user.password);
+
+		if (!valid) throw new UnauthorizedException();
+
+		const tokens = await this.generateTokens(user);
+
+		await this.saveRefreshToken(user.id, tokens.refreshToken);
+
+		return tokens;
 	}
 
-	async login(dto) {
-		const restaurant = await this.restaurants.findOne({
-			where: { email: dto.email },
-		});
-
-		return this.generateToken(restaurant);
-	}
-
-	generateToken(restaurant) {
-		return {
-			access_token: this.jwtService.sign({
-				restaurantId: restaurant.id,
-			}),
+	async generateTokens(user: User) {
+		const payload = {
+			sub: user.id,
+			restaurantId: user.restaurantId,
+			role: user.role,
+			email: user.email,
 		};
+
+		const accessToken = await this.jwtService.signAsync(payload, {
+			secret: process.env.JWT_SECRET,
+			expiresIn: '15m',
+		});
+
+		const refreshToken = await this.jwtService.signAsync(payload, {
+			secret: process.env.JWT_REFRESH_SECRET,
+			expiresIn: '30d',
+		});
+
+		return {
+			accessToken,
+			refreshToken,
+		};
+	}
+
+	async refresh(userId: string) {
+		const user = await this.users.findOne({
+			where: { id: userId },
+		});
+
+		return this.generateTokens(user);
+	}
+
+	async saveRefreshToken(userId: string, token: string) {
+		const hash = await bcrypt.hash(token, 10);
+
+		await this.users.update(userId, {
+			refreshToken: hash,
+		});
 	}
 }

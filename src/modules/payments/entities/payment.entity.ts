@@ -1,6 +1,6 @@
 import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, Index } from 'typeorm';
 
-import { PaymentStatus } from './enums/payment-status.enum';
+import { PaymentStatus } from '../enums/payment-status.enum';
 
 @Entity('payments')
 @Index(['restaurantId'])

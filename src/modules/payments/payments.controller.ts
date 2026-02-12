@@ -1,10 +1,13 @@
-import { Controller, Get, Param } from '@nestjs/common';
+import { Controller, Get, Param, UseGuards } from '@nestjs/common';
 
 import { PaymentsService } from './payments.service';
+import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
+import { RestaurantGuard } from 'src/auth/guards/restaurant.guard';
 
 @Controller('payments')
+@UseGuards(JwtAuthGuard, RestaurantGuard)
 export class PaymentsController {
-	constructor(private paymentsService: PaymentsService) {}
+	constructor(private paymentsService: PaymentsService) { }
 
 	@Get(':id')
 	getPayment(@Param('id') id: string) {

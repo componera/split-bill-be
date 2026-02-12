@@ -8,9 +8,19 @@ export class Restaurant {
 	@Column()
 	name: string;
 
+	@Column()
+	email: string;
+
+	@Column()
+	password: string;
+
 	@Column({ nullable: true })
 	lightspeedAccountId: string;
 
 	@Column({ nullable: true })
 	yocoSecretKey: string;
+
+	@Column({ nullable: true })
+	refreshToken?: string;
+
 }

@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 
-import { Restaurant } from '../restaurants/restaurants.entity';
+import { Restaurant } from '../restaurants/entities/restaurant.entity';
 import { Bill } from '../bills/entities/bill.entity';
 import { BillItem } from '../bills/bill-item.entity';
 
@@ -16,4 +16,4 @@ import { LightspeedController } from './lightspeed.controller';
 	controllers: [LightspeedController],
 	exports: [LightspeedService],
 })
-export class LightspeedModule {}
+export class LightspeedModule { }

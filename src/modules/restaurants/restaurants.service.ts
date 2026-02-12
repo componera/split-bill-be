@@ -2,7 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, Not } from 'typeorm';
 
-import { Restaurant } from './restaurants.entity';
+import { Restaurant } from './entities/restaurant.entity';
 import { CreateRestaurantDto } from './dto/create-restaurant.dto';
 import { ConnectLightspeedDto } from './dto/connect-lightspeed.dto';
 import { ConnectYocoDto } from './dto/connect-yoco.dto';
@@ -16,7 +16,7 @@ export class RestaurantsService {
 		private restaurantRepo: Repository<Restaurant>,
 
 		private lightspeedOAuth: LightspeedOAuthService,
-	) {}
+	) { }
 
 	/**
 	 * Create a restaurant

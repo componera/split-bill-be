@@ -10,10 +10,6 @@ import {
 
 import { Server, Socket } from 'socket.io';
 
-interface JoinRestaurantPayload {
-	restaurantId: string;
-}
-
 interface JoinBillPayload {
 	restaurantId: string;
 	billId: string;
@@ -42,11 +38,10 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 	// ===============================
 
 	@SubscribeMessage('joinRestaurant')
-	handleJoinRestaurant(@MessageBody() payload: JoinRestaurantPayload, @ConnectedSocket() client: Socket) {
-		const room = `restaurant:${payload.restaurantId}`;
-		client.join(room);
+	handleJoin(@ConnectedSocket() client: Socket) {
+		const user = client.handshake.auth.user;
 
-		console.log(`Client ${client.id} joined ${room}`);
+		client.join(`restaurant:${user.restaurantId}`);
 	}
 
 	@SubscribeMessage('joinBill')
