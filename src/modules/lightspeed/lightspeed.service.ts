@@ -16,7 +16,7 @@ export class LightspeedService {
 	constructor(
 		private oauth: LightspeedOAuthService,
 
-		private socketGateway: SocketGateway
+		private socketGateway: SocketGateway,
 
 		@InjectRepository(LightspeedToken)
 		private tokenRepo: Repository<LightspeedToken>,
