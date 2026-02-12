@@ -14,8 +14,8 @@ export class BillsService {
 		@InjectRepository(BillItem)
 		private itemRepo: Repository<BillItem>,
 
-		private socketGateway: SocketGateway,
-	) {}
+		private socketGateway: SocketGateway, // ✅ Now available
+	) { }
 
 	/*
 	Customer selects items to pay

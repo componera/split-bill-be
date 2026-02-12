@@ -72,11 +72,7 @@ export class LightspeedService {
 		}
 	}
 
-	async markItemsPaid(
-		restaurantId: string,
-		lightspeedSaleId: string,
-		paidItemIds: string[],
-	) {
+	async markItemsPaid(restaurantId: string, lightspeedSaleId: string, paidItemIds: string[]) {
 		// STEP 0: Get Lightspeed access token
 		const tokenEntity = await this.getAccessToken(restaurantId);
 		const accessToken = tokenEntity; // assume token entity has accessToken field
@@ -134,5 +130,4 @@ export class LightspeedService {
 
 		return { success: true, amount: totalAmount };
 	}
-
 }

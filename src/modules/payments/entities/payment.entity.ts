@@ -1,22 +1,24 @@
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, Index, JoinColumn, ManyToOne } from 'typeorm';
-
+import {
+	Entity,
+	PrimaryGeneratedColumn,
+	Column,
+	CreateDateColumn,
+	UpdateDateColumn,
+	Index,
+	JoinColumn,
+	ManyToOne,
+} from 'typeorm';
 import { PaymentStatus } from '../enums/payment-status.enum';
 import { Bill } from 'src/modules/bills/entities/bill.entity';
 import { Restaurant } from 'src/modules/restaurants/entities/restaurant.entity';
 
 @Entity('payments')
-@Index(['restaurantId'])
-@Index(['billId'])
+@Index(['bill'])         // use relation property
+@Index(['restaurant'])   // use relation property
 @Index(['status'])
 export class Payment {
 	@PrimaryGeneratedColumn('uuid')
 	id: string;
-
-	/*
-	================================
-	MULTI TENANT
-	================================
-	*/
 
 	@ManyToOne(() => Bill)
 	@JoinColumn({ name: 'billId' })
@@ -26,13 +28,6 @@ export class Payment {
 	@JoinColumn({ name: 'restaurantId' })
 	restaurant: Restaurant;
 
-
-	/*
-	================================
-	AMOUNT
-	================================
-	*/
-
 	@Column({
 		type: 'decimal',
 		precision: 10,
@@ -40,16 +35,8 @@ export class Payment {
 	})
 	amount: number;
 
-	@Column({
-		default: 'ZAR',
-	})
+	@Column({ default: 'ZAR' })
 	currency: string;
-
-	/*
-	================================
-	STATUS
-	================================
-	*/
 
 	@Column({
 		type: 'enum',
@@ -58,14 +45,8 @@ export class Payment {
 	})
 	status: PaymentStatus;
 
-	/*
-	================================
-	PROVIDER INFO
-	================================
-	*/
-
 	@Column({ nullable: true })
-	provider: string; // YOCO
+	provider: string;
 
 	@Column({ nullable: true })
 	providerPaymentId: string;
@@ -73,23 +54,8 @@ export class Payment {
 	@Column({ nullable: true })
 	checkoutId: string;
 
-	/*
-	================================
-	METADATA
-	================================
-	*/
-
-	@Column({
-		type: 'jsonb',
-		nullable: true,
-	})
+	@Column({ type: 'jsonb', nullable: true })
 	metadata: any;
-
-	/*
-	================================
-	AUDIT
-	================================
-	*/
 
 	@CreateDateColumn()
 	createdAt: Date;
