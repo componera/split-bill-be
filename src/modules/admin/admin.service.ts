@@ -2,9 +2,9 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 
-import { Bill } from '../../bills/entities/bill.entity';
-import { Payment } from '../../payments/entities/payment.entity';
-import { BillStatus } from 'src/bills/enums/bill-status.enum';
+import { Bill } from '../bills/entities/bill.entity';
+import { Payment } from '../payments/entities/payment.entity';
+import { BillStatus } from 'src/modules/bills/enums/bill-status.enum';
 
 @Injectable()
 export class AdminService {

@@ -2,12 +2,12 @@ import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ScheduleModule } from '@nestjs/schedule';
 import { WebsocketModule } from './websocket/websocket.module';
-import { LightspeedModule } from './lightspeed/lightspeed.module';
-import { RestaurantsModule } from './restaurants/restaurants.module';
-import { BillsModule } from './bills/bills.module';
-import { BillSplitsModule } from './bill-splits/bill.splits.module';
-import { QrModule } from './qr/qr.module';
-import { YocoModule } from './yoco/yoco.module';
+import { LightspeedModule } from './modules/lightspeed/lightspeed.module';
+import { RestaurantsModule } from './modules/restaurants/restaurants.module';
+import { BillsModule } from './modules/bills/bills.module';
+import { BillSplitsModule } from './modules/bill-splits/bill.splits.module';
+import { QrModule } from './modules/qr/qr.module';
+import { YocoModule } from './modules/yoco/yoco.module';
 
 @Module({
 	imports: [
@@ -28,4 +28,4 @@ import { YocoModule } from './yoco/yoco.module';
 		WebsocketModule,
 	],
 })
-export class AppModule {}
+export class AppModule { }

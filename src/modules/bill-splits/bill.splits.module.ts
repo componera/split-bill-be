@@ -2,7 +2,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { Module } from '@nestjs/common';
 import { BillSplit } from './entities/bill-split.entity';
 import { BillSplitsService } from './bill-splits.service';
-import { PaymentsModule } from 'src/payments/payments.module';
+import { PaymentsModule } from 'src/modules/payments/payments.module';
 import { BillSplitsController } from './bill-splits.controller';
 
 @Module({
@@ -10,4 +10,4 @@ import { BillSplitsController } from './bill-splits.controller';
 	providers: [BillSplitsService],
 	controllers: [BillSplitsController],
 })
-export class BillSplitsModule {}
+export class BillSplitsModule { }

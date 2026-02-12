@@ -1,16 +1,18 @@
-import { Controller, Post, Body, Res, Req } from "@nestjs/common";
-import { AuthService } from "./auth.service";
+import { Controller, Post, Body, Res, Req } from '@nestjs/common';
+import { Request, Response } from 'express';
+import { AuthService } from './auth.service';
+import { JwtService } from '@nestjs/jwt';
 
 @Controller('auth')
 export class AuthController {
-	constructor(private authService: AuthService) { }
+	constructor(
+		private authService: AuthService,
+		private jwtService: JwtService,
+	) { }
 
 	@Post('login')
 	async login(@Body() dto: any, @Res({ passthrough: true }) res: Response) {
-		const tokens = await this.authService.login(
-			dto.email,
-			dto.password,
-		);
+		const tokens = await this.authService.login(dto.email, dto.password);
 
 		res.cookie('refreshToken', tokens.refreshToken, {
 			httpOnly: true,
@@ -25,16 +27,10 @@ export class AuthController {
 	}
 
 	@Post('refresh')
-	async refresh(
-		@Req() req: Request,
-		@Res({ passthrough: true }) res: Response,
-	) {
+	async refresh(@Req() req: Request, @Res({ passthrough: true }) res: Response) {
 		const refreshToken = req.cookies.refreshToken;
 
-		const payload = this.jwtService.verify(
-			refreshToken,
-			{ secret: process.env.JWT_REFRESH_SECRET },
-		);
+		const payload = this.jwtService.verify(refreshToken, { secret: process.env.JWT_REFRESH_SECRET });
 
 		const tokens = await this.authService.refresh(payload.sub);
 

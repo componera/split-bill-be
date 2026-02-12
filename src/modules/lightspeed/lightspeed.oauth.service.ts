@@ -2,14 +2,14 @@ import { Injectable } from '@nestjs/common';
 import axios from 'axios';
 import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
-import { LightspeedToken } from './lightspeed-token.entity';
+import { LightspeedToken } from './entities/lightspeed-token.entity';
 
 @Injectable()
 export class LightspeedOAuthService {
 	constructor(
 		@InjectRepository(LightspeedToken)
 		private tokenRepo: Repository<LightspeedToken>,
-	) {}
+	) { }
 
 	getAuthUrl(restaurantId: string) {
 		const params = new URLSearchParams({

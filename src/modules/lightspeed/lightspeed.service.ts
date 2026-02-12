@@ -3,8 +3,8 @@ import axios from 'axios';
 import { LightspeedOAuthService } from './lightspeed.oauth.service';
 import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
-import { LightspeedToken } from './lightspeed-token.entity';
-import { BillItem } from 'src/bills/bill-item.entity';
+import { LightspeedToken } from './entities/lightspeed-token.entity';
+import { BillItem } from '../bills/entities/bill-item.entity';
 
 @Injectable()
 export class LightspeedService {
@@ -18,7 +18,7 @@ export class LightspeedService {
 
 		@InjectRepository(BillItem)
 		private billItemRepo: Repository<BillItem>,
-	) {}
+	) { }
 
 	async getAccessToken(restaurantId: string) {
 		const token = await this.tokenRepo.findOne({
@@ -79,11 +79,10 @@ export class LightspeedService {
 
 		await this.billItemRepo.update(
 			{
-				restaurantId,
 				lightspeedItemId: paidItemIds as any,
 			},
 			{
-				paid: true,
+				isPaid: true,
 			},
 		);
 
@@ -93,7 +92,6 @@ export class LightspeedService {
 
 		const items = await this.billItemRepo.find({
 			where: {
-				restaurantId,
 				lightspeedItemId: paidItemIds as any,
 			},
 		});
@@ -113,7 +111,7 @@ export class LightspeedService {
 			},
 			{
 				headers: {
-					Authorization: `Bearer ${token.accessToken}`,
+					Authorization: `Bearer ${token}`,
 				},
 			},
 		);

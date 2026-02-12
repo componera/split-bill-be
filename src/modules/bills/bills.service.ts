@@ -6,7 +6,7 @@ import { Repository, In } from 'typeorm';
 
 import { Bill } from './entities/bill.entity';
 import { BillItem } from './entities/bill-item.entity';
-import { SocketGateway } from '../websocket/websocket.gateway';
+import { SocketGateway } from '../../websocket/websocket.gateway';
 
 @Injectable()
 export class BillsService {
@@ -18,7 +18,7 @@ export class BillsService {
 		private itemRepo: Repository<BillItem>,
 
 		private socketGateway: SocketGateway,
-	) {}
+	) { }
 
 	/*
 	Customer selects items to pay
@@ -62,7 +62,7 @@ export class BillsService {
 		});
 
 		// Emit realtime update
-		this.socketGateway.emitBillUpdate(bill.restaurantId, updatedBill);
+		this.socketGateway.emitBillUpdated(bill.restaurantId, bill.id, updatedBill);
 
 		return updatedBill;
 	}
@@ -87,7 +87,7 @@ export class BillsService {
 			relations: ['items'],
 		});
 
-		this.socketGateway.emitBillUpdate(bill.restaurantId, bill);
+		this.socketGateway.emitBillUpdated(bill.restaurantId, bill.id, bill);
 
 		return bill;
 	}

@@ -1,35 +1,36 @@
 import { Injectable } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
-
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, MoreThan } from 'typeorm';
 
-import { Restaurant } from '../../restaurants/restaurants.entity';
+import { LightspeedToken } from './entities/lightspeed-token.entity';
 import { LightspeedSyncService } from './lightspeed.sync.service';
 
 @Injectable()
 export class LightspeedCronService {
 	constructor(
-		@InjectRepository(Restaurant)
-		private restaurants: Repository<Restaurant>,
+		@InjectRepository(LightspeedToken)
+		private lightspeedTokenRepo: Repository<LightspeedToken>,
 
 		private syncService: LightspeedSyncService,
-	) {}
+	) { }
 
-	// Runs every 30 seconds
 	@Cron(CronExpression.EVERY_30_SECONDS)
 	async syncAllRestaurants() {
-		const restaurants = await this.restaurants.find({
+		// Only active, non-expired tokens
+		const tokens = await this.lightspeedTokenRepo.find({
 			where: {
-				lightspeedAccessToken: true,
+				isActive: true,
+				expiresAt: MoreThan(new Date()),
 			},
+			relations: ['restaurant'],
 		});
 
-		for (const restaurant of restaurants) {
+		for (const token of tokens) {
 			try {
-				await this.syncService.syncSales(restaurant.id);
+				await this.syncService.syncSales(token.restaurantId);
 			} catch (e) {
-				console.error(`Lightspeed sync failed: ${restaurant.id}`, e.message);
+				console.error(`Lightspeed sync failed: ${token.restaurantId}`, e.message);
 			}
 		}
 	}

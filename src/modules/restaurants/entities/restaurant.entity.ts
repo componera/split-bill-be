@@ -18,6 +18,9 @@ export class Restaurant {
 	lightspeedAccountId: string;
 
 	@Column({ nullable: true })
+	lightspeedToken: string;
+
+	@Column({ nullable: true })
 	yocoSecretKey: string;
 
 	@Column({ nullable: true })

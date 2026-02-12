@@ -7,7 +7,7 @@ import { BillsController } from './bills.controller';
 import { Bill } from './entities/bill.entity';
 import { BillItem } from './entities/bill-item.entity';
 
-import { SocketGateway } from '../websocket/websocket.gateway';
+import { SocketGateway } from '../../websocket/websocket.gateway';
 
 @Module({
 	imports: [TypeOrmModule.forFeature([Bill, BillItem])],
@@ -15,4 +15,4 @@ import { SocketGateway } from '../websocket/websocket.gateway';
 	controllers: [BillsController],
 	exports: [BillsService],
 })
-export class BillsModule {}
+export class BillsModule { }

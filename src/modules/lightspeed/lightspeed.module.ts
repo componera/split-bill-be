@@ -3,7 +3,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 
 import { Restaurant } from '../restaurants/entities/restaurant.entity';
 import { Bill } from '../bills/entities/bill.entity';
-import { BillItem } from '../bills/bill-item.entity';
+import { BillItem } from '../bills/entities/bill-item.entity';
 
 import { LightspeedService } from './lightspeed.service';
 import { LightspeedOAuthService } from './lightspeed.oauth.service';

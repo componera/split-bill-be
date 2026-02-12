@@ -1,55 +1,27 @@
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, OneToMany, Index } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, OneToMany, CreateDateColumn, UpdateDateColumn } from 'typeorm';
+import { BillItem } from './bill-item.entity';
 
-import { BillItem } from '../entities/bill-item.entity';
-import { BillStatus } from '../enums/bill-status.enum';
-
-@Entity('bills')
-@Index(['restaurantId'])
-@Index(['lightspeedSaleId'])
+@Entity()
 export class Bill {
 	@PrimaryGeneratedColumn('uuid')
 	id: string;
 
 	@Column()
-	@Index()
 	restaurantId: string;
 
-	@Column({
-		nullable: true,
-	})
+	@Column()
 	lightspeedSaleId: string;
 
-	@Column({
-		nullable: true,
-	})
-	tableName: string;
+	@Column({ nullable: true })
+	tableNumber?: string;
 
-	@Column({
-		type: 'enum',
-		enum: BillStatus,
-		default: BillStatus.OPEN,
-	})
-	status: BillStatus;
+	@Column()
+	status: 'OPEN' | 'CLOSED';
 
-	@Column({
-		type: 'decimal',
-		precision: 10,
-		scale: 2,
-		default: 0,
-	})
-	total: number;
+	@Column({ nullable: true })
+	qrCode?: string;
 
-	@Column({
-		type: 'decimal',
-		precision: 10,
-		scale: 2,
-		default: 0,
-	})
-	paidTotal: number;
-
-	@OneToMany(() => BillItem, item => item.bill, {
-		cascade: true,
-	})
+	@OneToMany(() => BillItem, item => item.bill, { cascade: true })
 	items: BillItem[];
 
 	@CreateDateColumn()
