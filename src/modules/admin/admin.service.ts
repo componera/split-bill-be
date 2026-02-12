@@ -14,7 +14,7 @@ export class AdminService {
 
 		@InjectRepository(Payment)
 		private paymentRepo: Repository<Payment>,
-	) {}
+	) { }
 
 	async getStats(restaurantId: string) {
 		const activeBills = await this.billRepo.count({
@@ -25,9 +25,7 @@ export class AdminService {
 		});
 
 		const paymentsToday = await this.paymentRepo.count({
-			where: {
-				restaurantId,
-			},
+			where: { restaurant: { id: restaurantId } }, // ✅ nested relation
 		});
 
 		const revenue = await this.paymentRepo
@@ -55,7 +53,7 @@ export class AdminService {
 
 	async getPayments(restaurantId: string) {
 		return this.paymentRepo.find({
-			where: { restaurantId },
+			where: { restaurant: { id: restaurantId } },
 			order: { createdAt: 'DESC' },
 		});
 	}

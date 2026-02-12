@@ -15,7 +15,7 @@ export class PaymentsService {
 		private paymentRepo: Repository<Payment>,
 
 		private socketGateway: SocketGateway,
-	) {}
+	) { }
 
 	/*
 	==========================================
@@ -39,15 +39,16 @@ export class PaymentsService {
 	async markSuccess(paymentId: string) {
 		const payment = await this.paymentRepo.findOne({
 			where: { id: paymentId },
+			relations: ['restaurant', 'bill'], // <-- load the relations
 		});
 
 		if (!payment) return;
 
 		payment.status = PaymentStatus.SUCCESS;
-
 		await this.paymentRepo.save(payment);
 
-		this.socketGateway.emitPaymentCompleted(payment.restaurantId, payment.billId, payment);
+		// use IDs from loaded relations
+		this.socketGateway.emitPaymentCompleted(payment.restaurant.id, payment.bill.id, payment);
 
 		return payment;
 	}
@@ -84,7 +85,7 @@ export class PaymentsService {
 	*/
 	async findByBill(billId: string) {
 		return this.paymentRepo.find({
-			where: { billId },
+			where: { bill: { id: billId } },
 			order: { createdAt: 'DESC' },
 		});
 	}
@@ -96,7 +97,7 @@ export class PaymentsService {
 	*/
 	async findByRestaurant(restaurantId: string) {
 		return this.paymentRepo.find({
-			where: { restaurantId },
+			where: { restaurant: { id: restaurantId } },
 			order: { createdAt: 'DESC' },
 		});
 	}

@@ -50,8 +50,8 @@ export class YocoService {
 		const amount = items.reduce((sum, item) => sum + Number(item.price), 0);
 
 		const payment = this.paymentRepo.create({
-			restaurantId: dto.restaurantId,
-			billId: dto.billId,
+			restaurant: { id: dto.restaurantId },
+			bill: { id: dto.billId },
 			amount,
 			status: PaymentStatus.PENDING,
 
@@ -100,15 +100,15 @@ export class YocoService {
 
 		if (!payment) return;
 
-		payment.status = 'SUCCESS';
+		payment.status = PaymentStatus.SUCCESS;
 		await this.paymentRepo.save(payment);
 
-		const itemIds = payment.billItemIds;
+		const itemIds = payment.metadata.itemIds;
 
 		await this.itemRepo.update(
 			{ id: In(itemIds) },
 			{
-				paid: true,
+				isPaid: true,
 				paidAt: new Date(),
 				paymentId: payment.id,
 			},
@@ -116,7 +116,7 @@ export class YocoService {
 
 		const bill = await this.billRepo.findOne({
 			where: {
-				id: payment.billId,
+				id: payment.bill.id,
 			},
 			relations: ['items'],
 		});
