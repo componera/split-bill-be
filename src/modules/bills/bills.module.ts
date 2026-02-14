@@ -4,7 +4,7 @@ import { BillsService } from './bills.service';
 import { BillsController } from './bills.controller';
 import { Bill } from './entities/bill.entity';
 import { BillItem } from './entities/bill-item.entity';
-import { WebSocketModule } from '../../websocket/websocket.module'
+import { WebSocketModule } from '../../websocket/websocket.module';
 import { AuthModule } from 'src/auth/auth.module';
 import { UsersModule } from '../users/users.module';
 
@@ -19,4 +19,4 @@ import { UsersModule } from '../users/users.module';
 	providers: [BillsService],
 	exports: [BillsService],
 })
-export class BillsModule { }
+export class BillsModule {}

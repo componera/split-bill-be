@@ -6,7 +6,7 @@ import { BillsService } from './bills.service';
 @Controller('bills')
 @UseGuards(JwtAuthGuard, RestaurantGuard)
 export class BillsController {
-	constructor(private billsService: BillsService) { }
+	constructor(private billsService: BillsService) {}
 
 	@Post()
 	create(@Body() dto: any) {

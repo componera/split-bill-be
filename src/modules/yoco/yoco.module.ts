@@ -13,14 +13,14 @@ import { LightspeedModule } from '../lightspeed/lightspeed.module';
 @Module({
 	imports: [
 		TypeOrmModule.forFeature([
-			Payment,   // ✅ REQUIRED
+			Payment, // ✅ REQUIRED
 			Bill,
 			BillItem,
 		]),
-		WebSocketModule,  // for SocketGateway
+		WebSocketModule, // for SocketGateway
 		LightspeedModule, // for LightspeedService
 	],
 	providers: [YocoService],
 	exports: [YocoService],
 })
-export class YocoModule { }
+export class YocoModule {}

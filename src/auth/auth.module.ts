@@ -6,10 +6,12 @@ import { AuthService } from './auth.service';
 import { UsersModule } from '../modules/users/users.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { User } from 'src/modules/users/entities/user.entity';
+import { Restaurant } from 'src/modules/restaurants/entities/restaurant.entity';
+import { InviteToken } from './entities/invite-token.entity';
 
 @Module({
 	imports: [
-		TypeOrmModule.forFeature([User]),
+		TypeOrmModule.forFeature([User, Restaurant, InviteToken]),
 		UsersModule,
 		ConfigModule,
 

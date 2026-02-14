@@ -26,7 +26,7 @@ export class LightspeedService {
 
 		@InjectRepository(Payment)
 		private paymentRepo: Repository<Payment>,
-	) { }
+	) {}
 
 	async getAccessToken(restaurantId: string) {
 		const token = await this.tokenRepo.findOne({

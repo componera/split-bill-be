@@ -11,4 +11,4 @@ import { BillsModule } from '../bills/bills.module';
 	providers: [BillSplitsService],
 	controllers: [BillSplitsController],
 })
-export class BillSplitsModule { }
+export class BillSplitsModule {}

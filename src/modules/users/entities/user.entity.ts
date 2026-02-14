@@ -3,45 +3,51 @@ import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn } from 't
 import { Restaurant } from '../../restaurants/entities/restaurant.entity';
 
 export enum UserRole {
-    OWNER = 'owner',
-    ADMIN = 'admin',
-    STAFF = 'staff',
+	OWNER = 'owner',
+	ADMIN = 'admin',
+	STAFF = 'staff',
 }
 
 @Entity('users')
 export class User {
-    @PrimaryGeneratedColumn('uuid')
-    id: string;
+	@PrimaryGeneratedColumn('uuid')
+	id: string;
 
-    @Column()
-    name: string;
+	@Column()
+	firstName: string;
 
-    @Column({ unique: true })
-    email: string;
+	@Column()
+	lastName: string;
 
-    @Column()
-    password: string;
+	@Column({ unique: true })
+	email: string;
 
-    @Column({
-        type: 'enum',
-        enum: UserRole,
-        default: UserRole.STAFF,
-    })
-    role: UserRole;
+	@Column({ default: false })
+	emailVerified: boolean;
 
-    @Column({ nullable: true })
-    refreshToken?: string;
+	@Column()
+	password: string;
 
-    @ManyToOne(() => Restaurant)
-    @JoinColumn({ name: 'restaurantId' })
-    restaurant: Restaurant;
+	@Column({
+		type: 'enum',
+		enum: UserRole,
+		default: UserRole.STAFF,
+	})
+	role: UserRole;
 
-    @Column()
-    restaurantId: string;
+	@Column({ nullable: true })
+	refreshToken?: string;
 
-    @Column({ default: true })
-    isActive: boolean;
+	@ManyToOne(() => Restaurant)
+	@JoinColumn({ name: 'restaurantId' })
+	restaurant: Restaurant;
 
-    @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
-    createdAt: Date;
+	@Column()
+	restaurantId: string;
+
+	@Column({ default: true })
+	isActive: boolean;
+
+	@Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
+	createdAt: Date;
 }

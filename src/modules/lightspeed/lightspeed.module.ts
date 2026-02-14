@@ -20,4 +20,4 @@ import { Payment } from '../payments/entities/payment.entity';
 	controllers: [LightspeedController],
 	exports: [LightspeedService],
 })
-export class LightspeedModule { }
+export class LightspeedModule {}

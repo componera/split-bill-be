@@ -27,7 +27,7 @@ export class YocoService {
 		private socketGateway: SocketGateway,
 
 		private lightspeedService: LightspeedService,
-	) { }
+	) {}
 
 	/*
 	==========================================
@@ -43,7 +43,6 @@ export class YocoService {
 			},
 			relations: ['bill'],
 		});
-
 
 		if (!items.length) throw new BadRequestException('Items already paid');
 

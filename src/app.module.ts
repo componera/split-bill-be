@@ -39,4 +39,4 @@ import { ConfigModule } from '@nestjs/config';
 		WebSocketModule,
 	],
 })
-export class AppModule { }
+export class AppModule {}

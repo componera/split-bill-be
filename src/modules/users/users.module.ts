@@ -9,4 +9,4 @@ import { UsersService } from './users.service';
 	providers: [UsersService],
 	exports: [UsersService], // ✅ make it available to other modules
 })
-export class UsersModule { }
+export class UsersModule {}

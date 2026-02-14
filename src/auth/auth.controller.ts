@@ -2,6 +2,7 @@ import { Controller, Post, Body, Res, Req } from '@nestjs/common';
 import { Request, Response } from 'express';
 import { AuthService } from './auth.service';
 import { JwtService } from '@nestjs/jwt';
+import { RegisterDto } from './dto/register.dto';
 
 @Controller('auth')
 export class AuthController {
@@ -9,6 +10,22 @@ export class AuthController {
 		private authService: AuthService,
 		private jwtService: JwtService,
 	) {}
+
+	@Post('register')
+	async register(@Body() dto: RegisterDto, @Res({ passthrough: true }) res: Response) {
+		const tokens = await this.authService.register(dto);
+
+		res.cookie('refreshToken', tokens.refreshToken, {
+			httpOnly: true,
+			secure: true,
+			sameSite: 'strict',
+			path: '/auth/refresh',
+		});
+
+		return {
+			accessToken: tokens.accessToken,
+		};
+	}
 
 	@Post('login')
 	async login(@Body() dto: any, @Res({ passthrough: true }) res: Response) {
@@ -44,5 +61,21 @@ export class AuthController {
 		return {
 			accessToken: tokens.accessToken,
 		};
+	}
+
+	@Post('accept-invite')
+	async acceptInvite(
+		@Body()
+		body: {
+			token: string;
+			password: string;
+		},
+	) {
+		return this.authService.acceptInvite(body.token, body.password);
+	}
+
+	@Post('verify-email')
+	async verifyEmail(@Body() body: { token: string }) {
+		return this.authService.verifyEmail(body.token);
 	}
 }

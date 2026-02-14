@@ -13,4 +13,4 @@ import { UsersModule } from '../modules/users/users.module';
 	providers: [SocketGateway, WsJwtGuard],
 	exports: [SocketGateway],
 })
-export class WebSocketModule { }
+export class WebSocketModule {}

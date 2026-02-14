@@ -23,4 +23,4 @@ import { WebSocketModule } from '../../websocket/websocket.module'; // SocketGat
 	providers: [PaymentsService],
 	exports: [PaymentsService],
 })
-export class PaymentsModule { }
+export class PaymentsModule {}

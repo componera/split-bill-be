@@ -15,7 +15,7 @@ export class PaymentsService {
 		private paymentRepo: Repository<Payment>,
 
 		private socketGateway: SocketGateway,
-	) { }
+	) {}
 
 	/*
 	==========================================

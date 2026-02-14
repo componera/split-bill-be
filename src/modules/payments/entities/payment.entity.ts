@@ -1,20 +1,11 @@
-import {
-	Entity,
-	PrimaryGeneratedColumn,
-	Column,
-	CreateDateColumn,
-	UpdateDateColumn,
-	Index,
-	JoinColumn,
-	ManyToOne,
-} from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, Index, JoinColumn, ManyToOne } from 'typeorm';
 import { PaymentStatus } from '../enums/payment-status.enum';
 import { Bill } from 'src/modules/bills/entities/bill.entity';
 import { Restaurant } from 'src/modules/restaurants/entities/restaurant.entity';
 
 @Entity('payments')
-@Index(['bill'])         // use relation property
-@Index(['restaurant'])   // use relation property
+@Index(['bill']) // use relation property
+@Index(['restaurant']) // use relation property
 @Index(['status'])
 export class Payment {
 	@PrimaryGeneratedColumn('uuid')

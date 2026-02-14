@@ -7,13 +7,12 @@ import { CreateRestaurantDto } from './dto/create-restaurant.dto';
 import { ConnectLightspeedDto } from './dto/connect-lightspeed.dto';
 import { ConnectYocoDto } from './dto/connect-yoco.dto';
 
-
 @Injectable()
 export class RestaurantsService {
 	constructor(
 		@InjectRepository(Restaurant)
 		private restaurantRepo: Repository<Restaurant>,
-	) { }
+	) {}
 
 	/**
 	 * Create a restaurant
