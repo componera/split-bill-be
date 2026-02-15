@@ -6,11 +6,12 @@ import { AdminService } from './admin.service';
 
 import { Bill } from '../bills/entities/bill.entity';
 import { Payment } from '../payments/entities/payment.entity';
+import { AuthModule } from 'src/auth/auth.module';
 
 @Module({
-	imports: [TypeOrmModule.forFeature([Bill, Payment])],
+	imports: [AuthModule, TypeOrmModule.forFeature([Bill, Payment])],
 	controllers: [AdminController],
 	providers: [AdminService],
 	exports: [AdminService],
 })
-export class AdminModule {}
+export class AdminModule { }

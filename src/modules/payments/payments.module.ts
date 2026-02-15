@@ -8,9 +8,11 @@ import { BillItem } from '../bills/entities/bill-item.entity';
 import { UsersModule } from '../users/users.module'; // UsersService
 import { JwtModule } from '@nestjs/jwt'; // JwtService
 import { WebSocketModule } from '../../websocket/websocket.module'; // SocketGateway
+import { AuthModule } from 'src/auth/auth.module';
 
 @Module({
 	imports: [
+		AuthModule, // ✅ AuthService available
 		TypeOrmModule.forFeature([Payment, Bill, BillItem]),
 		UsersModule, // ✅ UsersService available
 		JwtModule.register({
@@ -23,4 +25,4 @@ import { WebSocketModule } from '../../websocket/websocket.module'; // SocketGat
 	providers: [PaymentsService],
 	exports: [PaymentsService],
 })
-export class PaymentsModule {}
+export class PaymentsModule { }
