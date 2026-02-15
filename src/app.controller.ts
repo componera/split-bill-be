@@ -1,15 +1,12 @@
 import { Controller, Get } from '@nestjs/common';
+import { AppService } from './app.service';
 
 @Controller()
 export class AppController {
-	constructor() { }
+	constructor(private readonly appService: AppService) { }
 
 	@Get()
-	root() {
-		return {
-			status: 'ok',
-			service: 'Divvy Tab API',
-			version: '1.0.0',
-		};
+	getHello(): string {
+		return this.appService.getHello();
 	}
 }
