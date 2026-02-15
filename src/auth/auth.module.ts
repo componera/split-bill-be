@@ -8,7 +8,6 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { User } from 'src/modules/users/entities/user.entity';
 import { Restaurant } from 'src/modules/restaurants/entities/restaurant.entity';
 import { InviteToken } from './entities/invite-token.entity';
-import { JwtAuthGuard } from './guards/jwt-auth.guard';
 
 @Module({
 	imports: [
@@ -28,6 +27,6 @@ import { JwtAuthGuard } from './guards/jwt-auth.guard';
 
 	providers: [AuthService],
 
-	exports: [AuthService, JwtModule, JwtAuthGuard],
+	exports: [AuthService, JwtModule],
 })
 export class AuthModule { }
