@@ -20,6 +20,7 @@ import { RestaurantsController } from './modules/restaurants/restaurants.control
 import { StaffController } from './modules/staff/staff.controller';
 import { YocoController } from './modules/yoco/yoco.controller';
 import { AuthModule } from './auth/auth.module';
+import { UsersModule } from './modules/users/users.module';
 
 @Module({
 	imports: [
@@ -46,6 +47,7 @@ import { AuthModule } from './auth/auth.module';
 		LightspeedModule,
 		YocoModule,
 		QrModule,
+		UsersModule,
 		WebSocketModule,
 	],
 	controllers: [
