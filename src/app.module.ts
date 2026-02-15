@@ -19,6 +19,7 @@ import { PaymentsController } from './modules/payments/payments.controller';
 import { RestaurantsController } from './modules/restaurants/restaurants.controller';
 import { StaffController } from './modules/staff/staff.controller';
 import { YocoController } from './modules/yoco/yoco.controller';
+import { AuthModule } from './auth/auth.module';
 
 @Module({
 	imports: [
@@ -38,6 +39,7 @@ import { YocoController } from './modules/yoco/yoco.controller';
 			},
 		}),
 		ScheduleModule.forRoot(),
+		AuthModule,
 		RestaurantsModule,
 		BillsModule,
 		BillSplitsModule,
@@ -56,7 +58,7 @@ import { YocoController } from './modules/yoco/yoco.controller';
 		QrController,
 		RestaurantsController,
 		StaffController,
-		YocoController
+		YocoController,
 	],
 })
 export class AppModule { }
