@@ -10,6 +10,15 @@ import { QrModule } from './modules/qr/qr.module';
 import { YocoModule } from './modules/yoco/yoco.module';
 import { ConfigModule } from '@nestjs/config';
 import { AppController } from './app.controller';
+import { AdminController } from './modules/admin/admin.controller';
+import { QrController } from './modules/qr/qr.controller';
+import { BillSplitsController } from './modules/bill-splits/bill-splits.controller';
+import { BillsController } from './modules/bills/bills.controller';
+import { LightspeedController } from './modules/lightspeed/lightspeed.controller';
+import { PaymentsController } from './modules/payments/payments.controller';
+import { RestaurantsController } from './modules/restaurants/restaurants.controller';
+import { StaffController } from './modules/staff/staff.controller';
+import { YocoController } from './modules/yoco/yoco.controller';
 
 @Module({
 	imports: [
@@ -37,6 +46,17 @@ import { AppController } from './app.controller';
 		QrModule,
 		WebSocketModule,
 	],
-	controllers: [AppController],
+	controllers: [
+		AppController,
+		AdminController,
+		BillsController,
+		BillSplitsController,
+		LightspeedController,
+		PaymentsController,
+		QrController,
+		RestaurantsController,
+		StaffController,
+		YocoController
+	],
 })
 export class AppModule { }
