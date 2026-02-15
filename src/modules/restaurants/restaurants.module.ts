@@ -8,11 +8,11 @@ import { RestaurantsService } from './restaurants.service';
 @Module({
 	imports: [
 		TypeOrmModule.forFeature([
-			Restaurant,
-			Bill, // REQUIRED
+			Restaurant
 		]),
 	],
 	controllers: [RestaurantsController],
 	providers: [RestaurantsService],
+	exports: [RestaurantsService],
 })
-export class RestaurantsModule {}
+export class RestaurantsModule { }

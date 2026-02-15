@@ -21,6 +21,9 @@ import { StaffController } from './modules/staff/staff.controller';
 import { YocoController } from './modules/yoco/yoco.controller';
 import { AuthModule } from './auth/auth.module';
 import { UsersModule } from './modules/users/users.module';
+import { AdminModule } from './modules/admin/admin.module';
+import { PaymentsModule } from './modules/payments/payments.module';
+import { StaffModule } from './modules/staff/staff.module';
 
 @Module({
 	imports: [
@@ -39,16 +42,19 @@ import { UsersModule } from './modules/users/users.module';
 				};
 			},
 		}),
-		ScheduleModule.forRoot(),
+		AdminModule,
 		AuthModule,
 		RestaurantsModule,
 		BillsModule,
 		BillSplitsModule,
 		LightspeedModule,
-		YocoModule,
 		QrModule,
+		PaymentsModule,
+		ScheduleModule.forRoot(),
+		StaffModule,
 		UsersModule,
 		WebSocketModule,
+		YocoModule,
 	],
 	controllers: [
 		AppController,

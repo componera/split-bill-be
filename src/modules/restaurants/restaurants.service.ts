@@ -12,7 +12,7 @@ export class RestaurantsService {
 	constructor(
 		@InjectRepository(Restaurant)
 		private restaurantRepo: Repository<Restaurant>,
-	) {}
+	) { }
 
 	/**
 	 * Create a restaurant
