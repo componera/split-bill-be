@@ -24,6 +24,7 @@ import { UsersModule } from './modules/users/users.module';
 import { AdminModule } from './modules/admin/admin.module';
 import { PaymentsModule } from './modules/payments/payments.module';
 import { StaffModule } from './modules/staff/staff.module';
+import { AuthController } from './auth/auth.controller';
 
 @Module({
 	imports: [
@@ -57,8 +58,9 @@ import { StaffModule } from './modules/staff/staff.module';
 		YocoModule,
 	],
 	controllers: [
-		AppController,
 		AdminController,
+		AppController,
+		AuthController,
 		BillsController,
 		BillSplitsController,
 		LightspeedController,
