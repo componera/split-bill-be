@@ -9,12 +9,11 @@ import { BillSplitsModule } from './modules/bill-splits/bill.splits.module';
 import { QrModule } from './modules/qr/qr.module';
 import { YocoModule } from './modules/yoco/yoco.module';
 import { ConfigModule } from '@nestjs/config';
+import { AppController } from './app.controller';
 
 @Module({
 	imports: [
-		ConfigModule.forRoot({
-			isGlobal: true,
-		}),
+		ConfigModule.forRoot({ isGlobal: true }),
 		TypeOrmModule.forRootAsync({
 			useFactory: () => {
 				const isProduction = process.env.NODE_ENV === 'production';
@@ -23,9 +22,9 @@ import { ConfigModule } from '@nestjs/config';
 					type: 'postgres',
 					url: process.env.DATABASE_URL,
 					ssl: isProduction ? { rejectUnauthorized: false } : false,
-					synchronize: true, // Disable in production after initial migration
+					synchronize: true,
 					logging: true,
-					autoLoadEntities: true, // automatically loads all entities
+					autoLoadEntities: true,
 				};
 			},
 		}),
@@ -38,5 +37,6 @@ import { ConfigModule } from '@nestjs/config';
 		QrModule,
 		WebSocketModule,
 	],
+	controllers: [AppController],
 })
-export class AppModule {}
+export class AppModule { }
