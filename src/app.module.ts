@@ -30,18 +30,14 @@ import { AuthController } from './auth/auth.controller';
 	imports: [
 		ConfigModule.forRoot({ isGlobal: true }),
 		TypeOrmModule.forRootAsync({
-			useFactory: () => {
-				const isProduction = process.env.NODE_ENV === 'production';
-
-				return {
-					type: 'postgres',
-					url: process.env.DATABASE_URL,
-					ssl: isProduction ? { rejectUnauthorized: false } : false,
-					synchronize: true,
-					logging: true,
-					autoLoadEntities: true,
-				};
-			},
+			useFactory: () => ({
+				type: 'postgres',
+				url: process.env.DATABASE_URL,
+				ssl: { rejectUnauthorized: false },
+				synchronize: true,
+				logging: true,
+				autoLoadEntities: true,
+			}),
 		}),
 		AdminModule,
 		AuthModule,
