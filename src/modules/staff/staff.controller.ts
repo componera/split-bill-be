@@ -2,14 +2,14 @@ import { Controller, Post, Body, UseGuards, Req, Get, Delete, Param } from '@nes
 import { StaffService } from './staff.service';
 import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../../auth/guards/roles.guard';
-import { Roles } from '../../auth/decorators/roles.decorator';
+// import { Roles } from '../../auth/decorators/roles.decorator';
 import { UserRole } from '../users/entities/user.entity';
 
 @Controller('staff')
 @UseGuards(JwtAuthGuard, RolesGuard) // Apply guards at controller level
-@Roles('ADMIN') // Apply role at controller level
+// @Roles('admin') // Apply role at controller level
 export class StaffController {
-	constructor(private staffService: StaffService) {}
+	constructor(private staffService: StaffService) { }
 
 	// -----------------------------
 	// GET all staff + pending invites
