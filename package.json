@@ -28,10 +28,8 @@
 		"@nestjs/jwt": "^11.0.2",
 		"@nestjs/passport": "^11.0.5",
 		"@nestjs/platform-fastify": "^10.4.22",
-		"@nestjs/platform-socket.io": "^10.4.22",
 		"@nestjs/schedule": "^6.1.1",
 		"@nestjs/typeorm": "^10.0.2",
-		"@nestjs/websockets": "^10.4.22",
 		"class-validator": "^0.14.3",
 		"nodemailer": "^8.0.1",
 		"passport": "^0.7.0",
@@ -40,7 +38,6 @@
 		"qrcode": "^1.5.4",
 		"reflect-metadata": "^0.1.14",
 		"rxjs": "^7.8.2",
-		"socket.io": "^4.8.3",
 		"typeorm": "^0.3.28"
 	},
 	"devDependencies": {
