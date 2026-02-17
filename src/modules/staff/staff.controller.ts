@@ -1,6 +1,8 @@
-import { Controller, Get, Post, Delete, Patch, Body, Param, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Delete, Patch, Body, Param, Req, UseGuards } from '@nestjs/common';
+import { FastifyRequest } from 'fastify';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 import { StaffService } from './staff.service';
+import { UserRole } from '../users/entities/user.entity';
 
 @Controller('staff')
 @UseGuards(JwtAuthGuard)
@@ -8,13 +10,13 @@ export class StaffController {
 	constructor(private readonly staffService: StaffService) { }
 
 	@Get()
-	getAll() {
-		return this.staffService.getAll();
+	getAll(@Req() req: FastifyRequest) {
+		return this.staffService.getAll((req as any).user.restaurantId);
 	}
 
 	@Post('invite')
-	invite(@Body() dto: { email: string }) {
-		return this.staffService.invite(dto.email);
+	invite(@Req() req: FastifyRequest, @Body() dto: { email: string }) {
+		return this.staffService.invite(dto.email, (req as any).user.restaurantId, UserRole.STAFF);
 	}
 
 	@Delete('invite/:id')
