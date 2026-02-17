@@ -1,77 +1,73 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { Repository } from 'typeorm';
-import { InviteToken } from '../../auth/entities/invite-token.entity';
 import { InjectRepository } from '@nestjs/typeorm';
-import { randomUUID } from 'crypto';
-import { EmailService } from '../email/email.service';
-import { User, UserRole } from '../users/entities/user.entity';
+import { User } from './entities/user.entity';
+import { Invite } from './entities/invite.entity';
+import { SocketGateway } from 'src/websocket/websocket.gateway';
 
 @Injectable()
 export class StaffService {
 	constructor(
-		@InjectRepository(InviteToken)
-		private inviteRepo: Repository<InviteToken>,
-
 		@InjectRepository(User)
 		private userRepo: Repository<User>,
+		@InjectRepository(Invite)
+		private inviteRepo: Repository<Invite>,
+		private socketGateway: SocketGateway,
+	) { }
 
-		private emailService: EmailService,
-	) {}
+	async getAll() {
+		const users = await this.userRepo.find();
+		const invites = await this.inviteRepo.find();
+		return { users, invites };
+	}
 
-	async invite(email: string, restaurantId: string, role: UserRole) {
-		const token = randomUUID();
-
+	async invite(email: string) {
 		const invite = this.inviteRepo.create({
 			email,
-			restaurantId,
-			role,
-			token,
-			expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+			expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days
 		});
 
 		await this.inviteRepo.save(invite);
+		this.socketGateway.emitStaffUpdated();
+		return invite;
+	}
 
-		await this.emailService.sendInvite(email, token);
-
+	async revokeInvite(id: string) {
+		const invite = await this.inviteRepo.findOne({ where: { id } });
+		if (!invite) throw new NotFoundException();
+		await this.inviteRepo.delete(id);
+		this.socketGateway.emitStaffUpdated();
 		return { success: true };
 	}
 
-	async getStaff(restaurantId: string) {
-		const users = await this.userRepo.find({
-			where: { restaurantId },
-		});
-
-		const invites = await this.inviteRepo.find({
-			where: { restaurantId },
-		});
-
-		return {
-			users,
-			invites,
-		};
-	}
-
-	// Resend invite
 	async resendInvite(inviteId: string) {
-		const invite = await this.inviteRepo.findOne({
-			where: { id: inviteId },
-		});
-
-		if (!invite) throw new NotFoundException('Invite not found');
-
-		await this.emailService.sendInvite(invite.email, invite.token);
+		const invite = await this.inviteRepo.findOne({ where: { id: inviteId } });
+		if (!invite) throw new NotFoundException();
+		// TODO: send email here
 		return { success: true };
 	}
 
-	// Revoke invite
-	async revokeInvite(inviteId: string) {
-		const invite = await this.inviteRepo.findOne({
-			where: { id: inviteId },
-		});
+	async promote(userId: string) {
+		const user = await this.userRepo.findOne({ where: { id: userId } });
+		if (!user) throw new NotFoundException();
+		user.role = 'admin';
+		await this.userRepo.save(user);
+		this.socketGateway.emitStaffUpdated();
+		return user;
+	}
 
-		if (!invite) throw new NotFoundException('Invite not found');
+	async demote(userId: string) {
+		const user = await this.userRepo.findOne({ where: { id: userId } });
+		if (!user) throw new NotFoundException();
+		user.role = 'staff';
+		await this.userRepo.save(user);
+		this.socketGateway.emitStaffUpdated();
+		return user;
+	}
 
-		await this.inviteRepo.delete(inviteId);
+	async remove(userId: string) {
+		await this.userRepo.delete(userId);
+		this.socketGateway.emitStaffUpdated();
 		return { success: true };
 	}
 }

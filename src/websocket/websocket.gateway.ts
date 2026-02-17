@@ -50,6 +50,10 @@ export class SocketGateway {
 		this.server.to(`bill:${billId}`).emit('bill.updated', bill);
 	}
 
+	emitStaffUpdated() {
+		this.server.emit('staffUpdated');
+	}
+
 	emitPaymentCompleted(restaurantId: string, billId: string, payment: any) {
 		this.server.to(`restaurant:${restaurantId}`).emit('payment.completed', payment);
 		this.server.to(`bill:${billId}`).emit('payment.completed', payment);
