@@ -1,5 +1,6 @@
 // src/modules/bills/entities/bill.entity.ts
 import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, OneToMany, CreateDateColumn, UpdateDateColumn } from 'typeorm';
+import type { Relation } from 'typeorm';
 import { Restaurant } from '../../restaurants/entities/restaurant.entity';
 import { BillItem } from './bill-item.entity';
 
@@ -12,7 +13,7 @@ export class Bill {
 	restaurantId: string;
 
 	@ManyToOne(() => Restaurant, restaurant => restaurant.bills)
-	restaurant: Restaurant;
+	restaurant: Relation<Restaurant>;
 
 	@Column({ nullable: true })
 	lightspeedSaleId?: string;
@@ -27,7 +28,7 @@ export class Bill {
 	qrCode?: string;
 
 	@OneToMany(() => BillItem, item => item.bill, { cascade: true })
-	items: BillItem[];
+	items: Relation<BillItem[]>;
 
 	@CreateDateColumn()
 	createdAt: Date;

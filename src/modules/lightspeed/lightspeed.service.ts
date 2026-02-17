@@ -1,5 +1,4 @@
 import { BadRequestException, Injectable, Logger } from '@nestjs/common';
-import axios from 'axios';
 import { LightspeedOAuthService } from './lightspeed.oauth.service';
 import { In, Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -26,7 +25,7 @@ export class LightspeedService {
 
 		@InjectRepository(Payment)
 		private paymentRepo: Repository<Payment>,
-	) {}
+	) { }
 
 	async getAccessToken(restaurantId: string) {
 		const token = await this.tokenRepo.findOne({
@@ -42,47 +41,46 @@ export class LightspeedService {
 		return token.accessToken;
 	}
 
-	async request(restaurantId: string, method: string, url: string, data?: any) {
+	async request(restaurantId: string, method: string, url: string, data?: any): Promise<{ data: any }> {
 		const token = await this.getAccessToken(restaurantId);
+		const fullUrl = `https://api.lightspeedapp.com/API/V3/Account/${url}`;
 
-		try {
-			return await axios({
+		let res = await fetch(fullUrl, {
+			method,
+			headers: {
+				Authorization: `Bearer ${token}`,
+				'Content-Type': 'application/json',
+			},
+			body: data ? JSON.stringify(data) : undefined,
+		});
+
+		if (res.status === 401) {
+			const newToken = await this.oauth.refreshToken(restaurantId);
+
+			res = await fetch(fullUrl, {
 				method,
-				url: `https://api.lightspeedapp.com/API/V3/Account/${url}`,
 				headers: {
-					Authorization: `Bearer ${token}`,
+					Authorization: `Bearer ${newToken}`,
+					'Content-Type': 'application/json',
 				},
-				data,
+				body: data ? JSON.stringify(data) : undefined,
 			});
-		} catch (err) {
-			if (err.response?.status === 401) {
-				const newToken = await this.oauth.refreshToken(restaurantId);
-
-				return axios({
-					method,
-					url,
-					headers: {
-						Authorization: `Bearer ${newToken}`,
-					},
-					data,
-				});
-			}
-
-			throw err;
 		}
+
+		if (!res.ok) throw new Error(`Lightspeed API error: ${res.status}`);
+
+		return { data: await res.json() };
 	}
 
 	async markItemsPaid(restaurantId: string, lightspeedSaleId: string, paidItemIds: string[]) {
-		// STEP 0: Get Lightspeed access token
-		const tokenEntity = await this.getAccessToken(restaurantId);
-		const accessToken = tokenEntity; // assume token entity has accessToken field
+		const accessToken = await this.getAccessToken(restaurantId);
 
-		// STEP 1: Load items safely, only from this restaurant and not already paid
+		// Load items safely, only from this restaurant and not already paid
 		const items = await this.billItemRepo.find({
 			where: {
 				lightspeedItemId: In(paidItemIds),
 				isPaid: false,
-				bill: { restaurantId }, // ensure multi-tenant safety
+				bill: { restaurantId },
 			},
 			relations: ['bill'],
 		});
@@ -91,29 +89,31 @@ export class LightspeedService {
 			throw new BadRequestException('Some items are invalid, already paid, or do not belong to this restaurant.');
 		}
 
-		// STEP 2: Mark items as paid
+		// Mark items as paid in bulk
 		for (const item of items) {
 			item.isPaid = true;
 		}
 		await this.billItemRepo.save(items);
 
-		// STEP 3: Calculate total
 		const totalAmount = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
 
-		// STEP 4: Register payment with Lightspeed
-		await axios.post(
-			`${process.env.LIGHTSPEED_API_URL}/sales/${lightspeedSaleId}/payments`,
-			{
+		// Register payment with Lightspeed
+		const res = await fetch(`${process.env.LIGHTSPEED_API_URL}/sales/${lightspeedSaleId}/payments`, {
+			method: 'POST',
+			headers: {
+				Authorization: `Bearer ${accessToken}`,
+				'Content-Type': 'application/json',
+			},
+			body: JSON.stringify({
 				amount: totalAmount,
 				currency: 'ZAR',
 				method: 'external',
-			},
-			{
-				headers: { Authorization: `Bearer ${accessToken}` },
-			},
-		);
+			}),
+		});
 
-		// STEP 5: Optionally create local Payment entity for auditing
+		if (!res.ok) throw new Error(`Lightspeed payment registration failed: ${res.status}`);
+
+		// Create local Payment entity for auditing
 		const payment = this.paymentRepo.create({
 			bill: { id: items[0].bill.id },
 			restaurant: { id: restaurantId },
@@ -123,7 +123,6 @@ export class LightspeedService {
 		});
 		await this.paymentRepo.save(payment);
 
-		// STEP 6: Emit WS updates
 		this.socketGateway.emitPaymentCompleted(restaurantId, items[0].bill.id, payment);
 
 		this.logger.log(`Marked items paid for sale ${lightspeedSaleId}: R${totalAmount}`);

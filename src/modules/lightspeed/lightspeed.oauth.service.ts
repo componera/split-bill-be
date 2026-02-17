@@ -1,5 +1,4 @@
 import { Injectable } from '@nestjs/common';
-import axios from 'axios';
 import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { LightspeedToken } from './entities/lightspeed-token.entity';
@@ -9,7 +8,7 @@ export class LightspeedOAuthService {
 	constructor(
 		@InjectRepository(LightspeedToken)
 		private tokenRepo: Repository<LightspeedToken>,
-	) {}
+	) { }
 
 	getAuthUrl(restaurantId: string) {
 		const params = new URLSearchParams({
@@ -24,14 +23,20 @@ export class LightspeedOAuthService {
 	}
 
 	async exchangeCode(code: string, restaurantId: string) {
-		const response = await axios.post('https://cloud.lightspeedapp.com/oauth/access_token', {
-			grant_type: 'authorization_code',
-			code,
-			client_id: process.env.LIGHTSPEED_CLIENT_ID,
-			client_secret: process.env.LIGHTSPEED_CLIENT_SECRET,
+		const res = await fetch('https://cloud.lightspeedapp.com/oauth/access_token', {
+			method: 'POST',
+			headers: { 'Content-Type': 'application/json' },
+			body: JSON.stringify({
+				grant_type: 'authorization_code',
+				code,
+				client_id: process.env.LIGHTSPEED_CLIENT_ID,
+				client_secret: process.env.LIGHTSPEED_CLIENT_SECRET,
+			}),
 		});
 
-		const token = response.data;
+		if (!res.ok) throw new Error(`Lightspeed OAuth failed: ${res.status}`);
+
+		const token = await res.json();
 
 		await this.tokenRepo.save({
 			restaurantId,
@@ -49,14 +54,20 @@ export class LightspeedOAuthService {
 			where: { restaurantId },
 		});
 
-		const response = await axios.post('https://cloud.lightspeedapp.com/oauth/access_token', {
-			grant_type: 'refresh_token',
-			refresh_token: token.refreshToken,
-			client_id: process.env.LIGHTSPEED_CLIENT_ID,
-			client_secret: process.env.LIGHTSPEED_CLIENT_SECRET,
+		const res = await fetch('https://cloud.lightspeedapp.com/oauth/access_token', {
+			method: 'POST',
+			headers: { 'Content-Type': 'application/json' },
+			body: JSON.stringify({
+				grant_type: 'refresh_token',
+				refresh_token: token.refreshToken,
+				client_id: process.env.LIGHTSPEED_CLIENT_ID,
+				client_secret: process.env.LIGHTSPEED_CLIENT_SECRET,
+			}),
 		});
 
-		const newToken = response.data;
+		if (!res.ok) throw new Error(`Lightspeed token refresh failed: ${res.status}`);
+
+		const newToken = await res.json();
 
 		token.accessToken = newToken.access_token;
 		token.refreshToken = newToken.refresh_token;

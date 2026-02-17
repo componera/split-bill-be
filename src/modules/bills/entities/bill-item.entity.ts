@@ -1,6 +1,7 @@
 // src/modules/bills/entities/bill-item.entity.ts
 
 import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, Index, JoinColumn } from 'typeorm';
+import type { Relation } from 'typeorm';
 import { Bill } from './bill.entity';
 import { Payment } from 'src/modules/payments/entities/payment.entity';
 
@@ -37,13 +38,13 @@ export class BillItem {
 	// inside BillItem entity
 	@ManyToOne(() => Payment)
 	@JoinColumn({ name: 'paymentId' })
-	payment?: Payment;
+	payment?: Relation<Payment>;
 
 	@Column({ type: 'uuid', nullable: true })
 	paymentId?: string;
 
 	@ManyToOne(() => Bill, bill => bill.items)
-	bill: Bill;
+	bill: Relation<Bill>;
 
 	@Column()
 	billId: string;

@@ -2,7 +2,6 @@ import { Injectable, BadRequestException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 
 import { Repository, In } from 'typeorm';
-import axios from 'axios';
 
 import { Payment } from '../payments/entities/payment.entity';
 import { Bill } from '../bills/entities/bill.entity';
@@ -27,19 +26,14 @@ export class YocoService {
 		private socketGateway: SocketGateway,
 
 		private lightspeedService: LightspeedService,
-	) {}
+	) { }
 
-	/*
-	==========================================
-	CREATE YOCO CHECKOUT SESSION
-	==========================================
-	*/
 	async createCheckout(dto: { restaurantId: string; billId: string; itemIds: string[] }) {
 		const items = await this.itemRepo.find({
 			where: {
 				id: In(dto.itemIds),
 				isPaid: false,
-				bill: { restaurantId: dto.restaurantId }, // <- via relation
+				bill: { restaurantId: dto.restaurantId },
 			},
 			relations: ['bill'],
 		});
@@ -53,45 +47,36 @@ export class YocoService {
 			bill: { id: dto.billId },
 			amount,
 			status: PaymentStatus.PENDING,
-
-			metadata: {
-				itemIds: dto.itemIds,
-			},
+			metadata: { itemIds: dto.itemIds },
 		});
 
 		await this.paymentRepo.save(payment);
 
-		const response = await axios.post(
-			'https://payments.yoco.com/api/checkouts',
-			{
+		const res = await fetch('https://payments.yoco.com/api/checkouts', {
+			method: 'POST',
+			headers: {
+				Authorization: `Bearer ${process.env.YOCO_SECRET_KEY}`,
+				'Content-Type': 'application/json',
+			},
+			body: JSON.stringify({
 				amount: Math.round(amount * 100),
 				currency: 'ZAR',
-
 				successUrl: `${process.env.FRONTEND_URL}/success`,
 				cancelUrl: `${process.env.FRONTEND_URL}/cancel`,
+				metadata: { paymentId: payment.id },
+			}),
+		});
 
-				metadata: {
-					paymentId: payment.id,
-				},
-			},
-			{
-				headers: {
-					Authorization: `Bearer ${process.env.YOCO_SECRET_KEY}`,
-				},
-			},
-		);
+		if (!res.ok) throw new BadRequestException('Yoco checkout creation failed');
+
+		const data = await res.json();
 
 		return {
-			checkoutId: response.data.id,
-			redirectUrl: response.data.redirectUrl,
+			checkoutId: data.id,
+			redirectUrl: data.redirectUrl,
 		};
 	}
 
-	/*
-	==========================================
-	HANDLE SUCCESSFUL PAYMENT
-	==========================================
-	*/
 	async handlePaymentSuccess(paymentId: string) {
 		const payment = await this.paymentRepo.findOne({
 			where: { id: paymentId },
@@ -114,28 +99,13 @@ export class YocoService {
 		);
 
 		const bill = await this.billRepo.findOne({
-			where: {
-				id: payment.bill.id,
-			},
+			where: { id: payment.bill.id },
 			relations: ['items'],
 		});
 
-		/*
-		==========================================
-		MARK ITEMS PAID IN LIGHTSPEED
-		==========================================
-		*/
-
 		await this.lightspeedService.markItemsPaid(bill.restaurantId, bill.lightspeedSaleId, itemIds);
 
-		/*
-		==========================================
-		SOCKET EVENTS
-		==========================================
-		*/
-
 		this.socketGateway.emitPaymentCompleted(bill.restaurantId, bill.id, payment);
-
 		this.socketGateway.emitBillUpdated(bill.restaurantId, bill.id, bill);
 	}
 }

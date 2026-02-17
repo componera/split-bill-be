@@ -2,6 +2,9 @@
 /dist
 /node_modules
 
+# Bun
+bun.lock
+
 # Logs
 logs
 *.log

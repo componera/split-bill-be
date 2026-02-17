@@ -1,1 +1,1 @@
-web: node dist/main.js
+web: bun run dist/main.js
