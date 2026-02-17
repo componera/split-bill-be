@@ -12,7 +12,11 @@ export class InviteToken {
 	@Column()
 	restaurantId: string;
 
-	@Column()
+	@Column({
+		type: 'enum',
+		enum: UserRole,
+		default: UserRole.STAFF,
+	})
 	role: UserRole;
 
 	@Column({ unique: true })

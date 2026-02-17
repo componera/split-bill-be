@@ -9,7 +9,7 @@ import { Roles } from 'src/auth/decorators/roles.decorator';
 @Controller('admin')
 @UseGuards(JwtAuthGuard, RestaurantGuard)
 export class AdminController {
-	constructor(private adminService: AdminService) {}
+	constructor(private adminService: AdminService) { }
 
 	@Get('stats')
 	@Roles('OWNER', 'MANAGER')
@@ -25,7 +25,7 @@ export class AdminController {
 
 	@Get(':restaurantId/payments')
 	@Roles('OWNER', 'MANAGER')
-	getPayments(@Req() rereq) {
-		return this.adminService.getPayments(rereq.user.restaurantIdstaurantId);
+	getPayments(@Req() req) {
+		return this.adminService.getPayments(req.user.restaurantId);
 	}
 }

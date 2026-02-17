@@ -1,7 +1,6 @@
 // Imports
 import { NestFactory } from '@nestjs/core';
 import { FastifyAdapter, NestFastifyApplication } from '@nestjs/platform-fastify';
-import { Logger } from '@nestjs/common';
 import { AppModule } from './app.module';
 import cookie from '@fastify/cookie';
 import { createBunWsHandlers } from './websocket/bun-ws.handlers';
@@ -10,6 +9,8 @@ import { createBunWsHandlers } from './websocket/bun-ws.handlers';
 const WS_PATH = '/ws';
 
 async function bootstrap() {
+	// Always log so we see output when running dist (Nest production logger may hide Logger.log)
+	console.log('[Bootstrap] Starting...');
 	const isProduction = process.env.NODE_ENV === 'production';
 
 	const app = await NestFactory.create<NestFastifyApplication>(
@@ -17,9 +18,11 @@ async function bootstrap() {
 		new FastifyAdapter({
 			trustProxy: true,
 			bodyLimit: 1_048_576,
-			caseSensitive: true,
-			ignoreTrailingSlash: true,
-		}),
+			routerOptions: {
+				caseSensitive: true,
+				ignoreTrailingSlash: true,
+			},
+		} as any),
 		{
 			bufferLogs: true,
 			logger: isProduction ? ['error', 'warn'] : ['log', 'error', 'warn', 'debug'],
@@ -73,7 +76,8 @@ async function bootstrap() {
 		},
 	});
 
-	Logger.log(`Server running on port ${port} (Bun HTTP + WebSocket)`, 'Bootstrap');
+	// Use console so it always shows (Nest production logger only shows error/warn)
+	console.log(`[Bootstrap] Server running on port ${port} (Bun HTTP + WebSocket)`);
 }
 
 /**
@@ -102,4 +106,7 @@ async function handleHttp(req: Request, fastify: { inject: (opts: any) => Promis
 	});
 }
 
-bootstrap();
+bootstrap().catch((err) => {
+	console.error('[Bootstrap] Fatal error:', err);
+	process.exit(1);
+});
