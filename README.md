@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="assets/Logo_Banner.png" alt="DivvyTab logo" width="400" />
+  <img src="assets/divvy-tab-logo.png" alt="DivvyTab logo" width="400" />
 </p>
 
 # Split Bill Backend

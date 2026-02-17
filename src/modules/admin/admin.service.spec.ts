@@ -12,11 +12,17 @@ describe('AdminService', () => {
 
 	const mockQueryBuilder = {
 		select: mock(function (this: any) { return this; }),
+		addSelect: mock(function (this: any) { return this; }),
 		where: mock(function (this: any) { return this; }),
+		andWhere: mock(function (this: any) { return this; }),
+		groupBy: mock(function (this: any) { return this; }),
+		orderBy: mock(function (this: any) { return this; }),
 		getRawOne: mock(() => Promise.resolve({ sum: '1500.00' })),
+		getRawMany: mock(() => Promise.resolve([])),
 	};
 
 	beforeEach(async () => {
+		mockQueryBuilder.getRawMany.mockResolvedValue([]);
 		billRepo = {
 			count: mock(() => Promise.resolve(3)),
 			find: mock(() => Promise.resolve([])),
@@ -89,6 +95,39 @@ describe('AdminService', () => {
 				order: { createdAt: 'DESC' },
 			});
 			expect(result).toHaveLength(1);
+		});
+	});
+
+	describe('getChartStats', () => {
+		it('should return chart data grouped by date', async () => {
+			const rawRows = [
+				{ date: '2025-02-15', revenue: '500.00', payments: '3' },
+				{ date: '2025-02-16', revenue: '750.50', payments: '5' },
+			];
+			mockQueryBuilder.getRawMany.mockResolvedValue(rawRows);
+
+			const result = await service.getChartStats('rest-1', 7);
+
+			expect(paymentRepo.createQueryBuilder).toHaveBeenCalledWith('p');
+			expect(mockQueryBuilder.andWhere).toHaveBeenCalledWith('p."createdAt" >= :startDate', expect.any(Object));
+			expect(result).toHaveLength(2);
+			expect(result[0]).toEqual({ date: '2025-02-15', revenue: 500, payments: 3 });
+			expect(result[1]).toEqual({ date: '2025-02-16', revenue: 750.5, payments: 5 });
+		});
+
+		it('should clamp days between 1 and 30', async () => {
+			await service.getChartStats('rest-1', 0);
+			await service.getChartStats('rest-1', 100);
+
+			expect(paymentRepo.createQueryBuilder).toHaveBeenCalledTimes(2);
+		});
+
+		it('should return empty array when no payments', async () => {
+			mockQueryBuilder.getRawMany.mockResolvedValue([]);
+
+			const result = await service.getChartStats('rest-1');
+
+			expect(result).toEqual([]);
 		});
 	});
 });
