@@ -1,5 +1,6 @@
 // src/modules/restaurants/entities/lightspeed-token.entity.ts
 import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn, CreateDateColumn, UpdateDateColumn } from 'typeorm';
+import type { Relation } from 'typeorm';
 import { Restaurant } from '../../restaurants/entities/restaurant.entity';
 @Entity()
 export class LightspeedToken {
@@ -11,7 +12,7 @@ export class LightspeedToken {
 
 	@ManyToOne(() => Restaurant, restaurant => restaurant.lightspeedTokens)
 	@JoinColumn({ name: 'restaurantId' })
-	restaurant: Restaurant;
+	restaurant: Relation<Restaurant>;
 
 	@Column()
 	accessToken: string;

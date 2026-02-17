@@ -3,7 +3,6 @@ import { JwtService } from '@nestjs/jwt';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User, UserRole } from 'src/modules/users/entities/user.entity';
 import { Repository } from 'typeorm';
-import * as bcrypt from 'bcrypt';
 import { RegisterDto } from './dto/register.dto';
 import { Restaurant } from 'src/modules/restaurants/entities/restaurant.entity';
 import { InviteToken } from './entities/invite-token.entity';
@@ -21,20 +20,16 @@ export class AuthService {
 
 		@InjectRepository(InviteToken)
 		private inviteRepo: Repository<InviteToken>,
-	) {}
+	) { }
 
 	async register(dto: RegisterDto) {
-		// Create restaurant
 		const restaurant = this.restaurantRepo.create({
 			name: dto.restaurantName,
 		});
-
 		await this.restaurantRepo.save(restaurant);
 
-		// Hash password
-		const passwordHash = await bcrypt.hash(dto.password, 10);
+		const passwordHash = await Bun.password.hash(dto.password, { algorithm: 'bcrypt', cost: 10 });
 
-		// Create admin user
 		const user = this.userRepo.create({
 			email: dto.email,
 			password: passwordHash,
@@ -43,47 +38,30 @@ export class AuthService {
 			role: UserRole.ADMIN,
 			restaurantId: restaurant.id,
 		});
-
 		await this.userRepo.save(user);
 
-		// Generate tokens
-		const accessToken = this.jwtService.sign(
-			{
-				sub: user.id,
-				restaurantId: restaurant.id,
-				role: user.role,
-			},
-			{
-				secret: process.env.JWT_SECRET,
-				expiresIn: '15m',
-			},
-		);
+		const [accessToken, refreshToken] = await Promise.all([
+			this.jwtService.signAsync(
+				{ sub: user.id, restaurantId: restaurant.id, role: user.role },
+				{ secret: process.env.JWT_SECRET, expiresIn: '15m' },
+			),
+			this.jwtService.signAsync(
+				{ sub: user.id },
+				{ secret: process.env.JWT_REFRESH_SECRET, expiresIn: '30d' },
+			),
+		]);
 
-		const refreshToken = this.jwtService.sign(
-			{ sub: user.id },
-			{
-				secret: process.env.JWT_REFRESH_SECRET,
-				expiresIn: '30d',
-			},
-		);
-
-		return {
-			accessToken,
-			refreshToken,
-		};
+		return { accessToken, refreshToken };
 	}
 
 	async login(email: string, password: string) {
 		const user = await this.userRepo.findOne({ where: { email } });
-
 		if (!user) throw new UnauthorizedException();
 
-		const valid = await bcrypt.compare(password, user.password);
-
+		const valid = await Bun.password.verify(password, user.password);
 		if (!valid) throw new UnauthorizedException();
 
 		const tokens = await this.generateTokens(user);
-
 		await this.saveRefreshToken(user.id, tokens.refreshToken);
 
 		return tokens;
@@ -97,20 +75,18 @@ export class AuthService {
 			email: user.email,
 		};
 
-		const accessToken = await this.jwtService.signAsync(payload, {
-			secret: process.env.JWT_SECRET,
-			expiresIn: '15m',
-		});
+		const [accessToken, refreshToken] = await Promise.all([
+			this.jwtService.signAsync(payload, {
+				secret: process.env.JWT_SECRET,
+				expiresIn: '15m',
+			}),
+			this.jwtService.signAsync(payload, {
+				secret: process.env.JWT_REFRESH_SECRET,
+				expiresIn: '30d',
+			}),
+		]);
 
-		const refreshToken = await this.jwtService.signAsync(payload, {
-			secret: process.env.JWT_REFRESH_SECRET,
-			expiresIn: '30d',
-		});
-
-		return {
-			accessToken,
-			refreshToken,
-		};
+		return { accessToken, refreshToken };
 	}
 
 	async refresh(userId: string) {
@@ -122,21 +98,18 @@ export class AuthService {
 	}
 
 	async saveRefreshToken(userId: string, token: string) {
-		const hash = await bcrypt.hash(token, 10);
+		const hash = await Bun.password.hash(token, { algorithm: 'bcrypt', cost: 10 });
 
-		await this.userRepo.update(userId, {
-			refreshToken: hash,
-		});
+		await this.userRepo.update(userId, { refreshToken: hash });
 	}
 
 	async acceptInvite(token: string, password: string) {
 		const invite = await this.inviteRepo.findOne({
 			where: { token },
 		});
-
 		if (!invite) throw new Error('Invalid invite');
 
-		const passwordHash = await bcrypt.hash(password, 10);
+		const passwordHash = await Bun.password.hash(password, { algorithm: 'bcrypt', cost: 10 });
 
 		const user = this.userRepo.create({
 			email: invite.email,
@@ -145,9 +118,7 @@ export class AuthService {
 			password: passwordHash,
 			emailVerified: true,
 		});
-
 		await this.userRepo.save(user);
-
 		await this.inviteRepo.delete(invite.id);
 
 		return { success: true };
@@ -157,7 +128,6 @@ export class AuthService {
 		const invite = await this.inviteRepo.findOne({
 			where: { token },
 		});
-
 		if (!invite) throw new Error('Invalid');
 
 		const user = await this.userRepo.findOne({
@@ -165,7 +135,6 @@ export class AuthService {
 		});
 
 		user.emailVerified = true;
-
 		await this.userRepo.save(user);
 
 		return { success: true };

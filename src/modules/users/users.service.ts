@@ -1,7 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import * as bcrypt from 'bcrypt';
 
 import { User, UserRole } from './entities/user.entity';
 
@@ -12,19 +11,16 @@ export class UsersService {
 		private userRepo: Repository<User>,
 	) { }
 
-	// Find user by email
 	async findByEmail(email: string): Promise<User | null> {
 		return this.userRepo.findOne({ where: { email } });
 	}
 
-	// Find user by id
 	async findById(id: string): Promise<User> {
 		const user = await this.userRepo.findOne({ where: { id } });
 		if (!user) throw new NotFoundException('User not found');
 		return user;
 	}
 
-	// Create a new user with password hash
 	async create(
 		firstName: string,
 		lastName: string,
@@ -33,17 +29,15 @@ export class UsersService {
 		restaurantId: string,
 		role: UserRole = UserRole.STAFF,
 	): Promise<User> {
-		const passwordHash = await bcrypt.hash(password, 10);
+		const passwordHash = await Bun.password.hash(password, { algorithm: 'bcrypt', cost: 10 });
 		const user = this.userRepo.create({ firstName, lastName, email, password: passwordHash, restaurantId, role });
 		return this.userRepo.save(user);
 	}
 
-	// Validate password
 	async validatePassword(user: User, password: string): Promise<boolean> {
-		return bcrypt.compare(password, user.password);
+		return Bun.password.verify(password, user.password);
 	}
 
-	// Update refresh token for JWT refresh flow
 	async updateRefreshToken(userId: string, hash: string): Promise<void> {
 		await this.userRepo.update(userId, { refreshToken: hash });
 	}

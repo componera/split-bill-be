@@ -1,4 +1,5 @@
 import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn } from 'typeorm';
+import type { Relation } from 'typeorm';
 
 import { Restaurant } from '../../restaurants/entities/restaurant.entity';
 
@@ -40,7 +41,7 @@ export class User {
 
 	@ManyToOne(() => Restaurant)
 	@JoinColumn({ name: 'restaurantId' })
-	restaurant: Restaurant;
+	restaurant: Relation<Restaurant>;
 
 	@Column()
 	restaurantId: string;

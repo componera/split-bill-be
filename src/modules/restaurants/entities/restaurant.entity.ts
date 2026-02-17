@@ -1,5 +1,6 @@
 // src/modules/restaurants/entities/restaurant.entity.ts
 import { Entity, PrimaryGeneratedColumn, Column, OneToMany, CreateDateColumn, UpdateDateColumn } from 'typeorm';
+import type { Relation } from 'typeorm';
 import { LightspeedToken } from '../../lightspeed/entities/lightspeed-token.entity';
 import { Bill } from '../../bills/entities/bill.entity';
 
@@ -27,10 +28,10 @@ export class Restaurant {
 	yocoSecretKey?: string;
 
 	@OneToMany(() => LightspeedToken, token => token.restaurant)
-	lightspeedTokens: LightspeedToken[];
+	lightspeedTokens: Relation<LightspeedToken[]>;
 
 	@OneToMany(() => Bill, bill => bill.restaurant)
-	bills: Bill[];
+	bills: Relation<Bill[]>;
 
 	@CreateDateColumn()
 	createdAt: Date;

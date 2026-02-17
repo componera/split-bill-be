@@ -1,4 +1,5 @@
 import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, Index, JoinColumn, ManyToOne } from 'typeorm';
+import type { Relation } from 'typeorm';
 import { PaymentStatus } from '../enums/payment-status.enum';
 import { Bill } from 'src/modules/bills/entities/bill.entity';
 import { Restaurant } from 'src/modules/restaurants/entities/restaurant.entity';
@@ -13,11 +14,11 @@ export class Payment {
 
 	@ManyToOne(() => Bill)
 	@JoinColumn({ name: 'billId' })
-	bill: Bill;
+	bill: Relation<Bill>;
 
 	@ManyToOne(() => Restaurant)
 	@JoinColumn({ name: 'restaurantId' })
-	restaurant: Restaurant;
+	restaurant: Relation<Restaurant>;
 
 	@Column({
 		type: 'decimal',

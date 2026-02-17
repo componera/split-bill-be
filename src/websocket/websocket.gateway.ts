@@ -1,66 +1,67 @@
-import { WebSocketGateway, WebSocketServer, SubscribeMessage, ConnectedSocket, MessageBody } from '@nestjs/websockets';
-import { Server, Socket } from 'socket.io';
-import { WsJwtGuard } from '../auth/guards/ws-jwt.guard';
-import { UseGuards } from '@nestjs/common';
+// Imports
+import { Injectable } from '@nestjs/common';
+import { BunWebSocketRoomManager } from './bun-ws.room-manager';
 
-@WebSocketGateway({
-	namespace: '/ws',
-	cors: { origin: '*' },
-})
+/**
+ * Socket gateway
+ * @description Emits real-time events over Bun's native WebSocket server (see main.ts).
+ * Services inject this to push bill, payment, and staff updates to connected clients.
+ */
+@Injectable()
 export class SocketGateway {
-	@WebSocketServer()
-	server: Server;
+	/**
+	 * Constructor
+	 * @param roomManager - The room manager
+	 */
+	constructor(private readonly roomManager: BunWebSocketRoomManager) { }
 
 	// ===============================
-	// JOIN ROOMS
+	// BILL EVENTS
 	// ===============================
-	@UseGuards(WsJwtGuard)
-	@SubscribeMessage('joinRestaurant')
-	handleJoin(@ConnectedSocket() client: Socket) {
-		const user = client.data.user;
-		client.join(`restaurant:${user.restaurantId}`);
+
+	/**
+	 * Emit when a new bill is created for a restaurant
+	 */
+	emitBillCreated(restaurantId: string, bill: any): void {
+		this.roomManager.to(`restaurant:${restaurantId}`).emit('bill.created', bill);
 	}
 
-	@UseGuards(WsJwtGuard)
-	@SubscribeMessage('joinBill')
-	handleJoinBill(@MessageBody() payload: { billId: string }, @ConnectedSocket() client: Socket) {
-		const user = client.data.user;
-		const billRoom = `bill:${payload.billId}`;
-		const restaurantRoom = `restaurant:${user.restaurantId}`;
-
-		client.join(billRoom);
-		client.join(restaurantRoom);
+	/**
+	 * Emit when a bill is updated (restaurant room and bill room)
+	 */
+	emitBillUpdated(restaurantId: string, billId: string, bill: any): void {
+		this.roomManager.to(`restaurant:${restaurantId}`).emit('bill.updated', bill);
+		this.roomManager.to(`bill:${billId}`).emit('bill.updated', bill);
 	}
 
-	@SubscribeMessage('leaveBill')
-	handleLeaveBill(@MessageBody() payload: { billId: string }, @ConnectedSocket() client: Socket) {
-		const room = `bill:${payload.billId}`;
-		client.leave(room);
+	/**
+	 * Emit when a bill is closed (restaurant room and bill room)
+	 */
+	emitBillClosed(restaurantId: string, billId: string, bill: any): void {
+		this.roomManager.to(`restaurant:${restaurantId}`).emit('bill.closed', bill);
+		this.roomManager.to(`bill:${billId}`).emit('bill.closed', bill);
 	}
 
 	// ===============================
-	// EMIT EVENTS
+	// STAFF EVENTS
 	// ===============================
-	emitBillCreated(restaurantId: string, bill: any) {
-		this.server.to(`restaurant:${restaurantId}`).emit('bill.created', bill);
+
+	/**
+	 * Broadcast staff list changed to all connected clients
+	 */
+	emitStaffUpdated(): void {
+		this.roomManager.broadcast('staffUpdated');
 	}
 
-	emitBillUpdated(restaurantId: string, billId: string, bill: any) {
-		this.server.to(`restaurant:${restaurantId}`).emit('bill.updated', bill);
-		this.server.to(`bill:${billId}`).emit('bill.updated', bill);
-	}
+	// ===============================
+	// PAYMENT EVENTS
+	// ===============================
 
-	emitStaffUpdated() {
-		this.server.emit('staffUpdated');
-	}
-
-	emitPaymentCompleted(restaurantId: string, billId: string, payment: any) {
-		this.server.to(`restaurant:${restaurantId}`).emit('payment.completed', payment);
-		this.server.to(`bill:${billId}`).emit('payment.completed', payment);
-	}
-
-	emitBillClosed(restaurantId: string, billId: string, bill: any) {
-		this.server.to(`restaurant:${restaurantId}`).emit('bill.closed', bill);
-		this.server.to(`bill:${billId}`).emit('bill.closed', bill);
+	/**
+	 * Emit when a payment is completed (restaurant room and bill room)
+	 */
+	emitPaymentCompleted(restaurantId: string, billId: string, payment: any): void {
+		this.roomManager.to(`restaurant:${restaurantId}`).emit('payment.completed', payment);
+		this.roomManager.to(`bill:${billId}`).emit('payment.completed', payment);
 	}
 }
