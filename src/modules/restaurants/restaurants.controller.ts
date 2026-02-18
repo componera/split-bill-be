@@ -8,7 +8,7 @@ import { CreateRestaurantSquareDto } from './dto/create-restaurant-square.dto';
 
 @Controller('restaurants')
 export class RestaurantsController {
-	constructor(private restaurantsService: RestaurantsService) { }
+	constructor(private restaurantsService: RestaurantsService) {}
 
 	@Post()
 	create(@Body() dto: CreateRestaurantDto) {
