@@ -17,6 +17,16 @@ import { AdminModule } from './modules/admin/admin.module';
 import { PaymentsModule } from './modules/payments/payments.module';
 import { StaffModule } from './modules/staff/staff.module';
 import { AuthController } from './auth/auth.controller';
+import { SquareController } from './modules/square/square.controller';
+import { StaffController } from './modules/staff/staff.controller';
+import { RestaurantsController } from './modules/restaurants/restaurants.controller';
+import { QrController } from './modules/qr/qr.controller';
+import { PaymentsController } from './modules/payments/payments.controller';
+import { LightspeedController } from './modules/lightspeed/lightspeed.controller';
+import { LightspeedWebhookController } from './modules/lightspeed/lightspeed.webhook.controller';
+import { BillsController } from './modules/bills/bills.controller';
+import { BillSplitsController } from './modules/bill-splits/bill-splits.controller';
+import { AdminController } from './modules/admin/admin.controller';
 
 @Module({
 	imports: [
@@ -50,6 +60,6 @@ import { AuthController } from './auth/auth.controller';
 		WebSocketModule,
 		YocoModule,
 	],
-	controllers: [AppController, AuthController, YocoController],
+	controllers: [AdminController, AppController, AuthController, BillsController, BillSplitsController, QrController, LightspeedController, LightspeedWebhookController, PaymentsController, RestaurantsController, SquareController, StaffController, YocoController],
 })
-export class AppModule {}
+export class AppModule { }
