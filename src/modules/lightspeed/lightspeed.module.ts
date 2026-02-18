@@ -18,6 +18,6 @@ import { Payment } from '../payments/entities/payment.entity';
 	imports: [TypeOrmModule.forFeature([LightspeedToken, Payment, Restaurant, Bill, BillItem]), WebSocketModule],
 	providers: [LightspeedService, LightspeedOAuthService, LightspeedSyncService],
 	controllers: [LightspeedController],
-	exports: [LightspeedService, LightspeedOAuthService],
+	exports: [LightspeedService, LightspeedOAuthService, LightspeedSyncService],
 })
 export class LightspeedModule { }
