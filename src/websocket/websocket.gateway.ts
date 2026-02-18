@@ -13,7 +13,7 @@ export class SocketGateway {
 	 * Constructor
 	 * @param roomManager - The room manager
 	 */
-	constructor(private readonly roomManager: BunWebSocketRoomManager) { }
+	constructor(private readonly roomManager: BunWebSocketRoomManager) {}
 
 	// ===============================
 	// BILL EVENTS

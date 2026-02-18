@@ -26,7 +26,7 @@ export class YocoService {
 		private socketGateway: SocketGateway,
 
 		private lightspeedService: LightspeedService,
-	) { }
+	) {}
 
 	async createCheckout(dto: { restaurantId: string; billId: string; itemIds: string[] }) {
 		const items = await this.itemRepo.find({

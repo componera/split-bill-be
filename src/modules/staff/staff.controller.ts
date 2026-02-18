@@ -7,7 +7,7 @@ import { UserRole } from '../users/entities/user.entity';
 @Controller('staff')
 @UseGuards(JwtAuthGuard)
 export class StaffController {
-	constructor(private readonly staffService: StaffService) { }
+	constructor(private readonly staffService: StaffService) {}
 
 	@Get()
 	getAll(@Req() req: FastifyRequest) {

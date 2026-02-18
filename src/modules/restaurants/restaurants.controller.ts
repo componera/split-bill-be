@@ -4,13 +4,11 @@ import { RestaurantsService } from './restaurants.service';
 import { CreateRestaurantDto } from './dto/create-restaurant.dto';
 import { ConnectLightspeedDto } from './dto/connect-lightspeed.dto';
 import { ConnectYocoDto } from './dto/connect-yoco.dto';
+import { CreateRestaurantSquareDto } from './dto/create-restaurant-square.dto';
 
 @Controller('restaurants')
 export class RestaurantsController {
-	constructor(
-		private restaurantsService: RestaurantsService,
-
-	) { }
+	constructor(private restaurantsService: RestaurantsService) { }
 
 	@Post()
 	create(@Body() dto: CreateRestaurantDto) {
@@ -25,5 +23,10 @@ export class RestaurantsController {
 	@Post(':id/connect-yoco')
 	connectYoco(@Param('id') id: string, @Body() dto: ConnectYocoDto) {
 		return this.restaurantsService.connectYoco(id, dto);
+	}
+
+	@Post('square-auth')
+	async squareAuth(@Body() dto: CreateRestaurantSquareDto) {
+		return this.restaurantsService.saveSquareAuth(dto);
 	}
 }

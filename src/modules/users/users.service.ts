@@ -9,7 +9,7 @@ export class UsersService {
 	constructor(
 		@InjectRepository(User)
 		private userRepo: Repository<User>,
-	) { }
+	) {}
 
 	async findByEmail(email: string): Promise<User | null> {
 		return this.userRepo.findOne({ where: { email } });

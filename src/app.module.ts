@@ -52,4 +52,4 @@ import { AuthController } from './auth/auth.controller';
 	],
 	controllers: [AppController, AuthController, YocoController],
 })
-export class AppModule { }
+export class AppModule {}

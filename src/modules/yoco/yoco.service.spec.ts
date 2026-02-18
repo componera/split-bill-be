@@ -33,8 +33,8 @@ describe('YocoService', () => {
 			update: mock(() => Promise.resolve({ affected: 1 })),
 		};
 		socketGateway = {
-			emitPaymentCompleted: mock(() => { }),
-			emitBillUpdated: mock(() => { }),
+			emitPaymentCompleted: mock(() => {}),
+			emitBillUpdated: mock(() => {}),
 		};
 		lightspeedService = {
 			markItemsPaid: mock(() => Promise.resolve()),
@@ -98,21 +98,19 @@ describe('YocoService', () => {
 		it('should throw if no unpaid items found', async () => {
 			itemRepo.find.mockResolvedValue([]);
 
-			expect(
-				service.createCheckout({ restaurantId: 'rest-1', billId: 'bill-1', itemIds: ['item-1'] }),
-			).rejects.toThrow(BadRequestException);
+			expect(service.createCheckout({ restaurantId: 'rest-1', billId: 'bill-1', itemIds: ['item-1'] })).rejects.toThrow(
+				BadRequestException,
+			);
 		});
 
 		it('should throw if Yoco API fails', async () => {
 			itemRepo.find.mockResolvedValue([{ id: 'item-1', price: 100, isPaid: false, bill: { restaurantId: 'rest-1' } }]);
 
-			globalThis.fetch = mock(() =>
-				Promise.resolve({ ok: false, status: 500 }),
-			) as any;
+			globalThis.fetch = mock(() => Promise.resolve({ ok: false, status: 500 })) as any;
 
-			expect(
-				service.createCheckout({ restaurantId: 'rest-1', billId: 'bill-1', itemIds: ['item-1'] }),
-			).rejects.toThrow(BadRequestException);
+			expect(service.createCheckout({ restaurantId: 'rest-1', billId: 'bill-1', itemIds: ['item-1'] })).rejects.toThrow(
+				BadRequestException,
+			);
 		});
 	});
 
@@ -136,13 +134,8 @@ describe('YocoService', () => {
 
 			await service.handlePaymentSuccess('pay-1');
 
-			expect(paymentRepo.save).toHaveBeenCalledWith(
-				expect.objectContaining({ status: PaymentStatus.SUCCESS }),
-			);
-			expect(itemRepo.update).toHaveBeenCalledWith(
-				{ id: expect.anything() },
-				expect.objectContaining({ isPaid: true }),
-			);
+			expect(paymentRepo.save).toHaveBeenCalledWith(expect.objectContaining({ status: PaymentStatus.SUCCESS }));
+			expect(itemRepo.update).toHaveBeenCalledWith({ id: expect.anything() }, expect.objectContaining({ isPaid: true }));
 			expect(lightspeedService.markItemsPaid).toHaveBeenCalledWith('rest-1', 'ls-1', ['item-1']);
 			expect(socketGateway.emitPaymentCompleted).toHaveBeenCalled();
 			expect(socketGateway.emitBillUpdated).toHaveBeenCalled();

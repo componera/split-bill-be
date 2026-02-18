@@ -11,12 +11,24 @@ describe('AdminService', () => {
 	let paymentRepo: any;
 
 	const mockQueryBuilder = {
-		select: mock(function (this: any) { return this; }),
-		addSelect: mock(function (this: any) { return this; }),
-		where: mock(function (this: any) { return this; }),
-		andWhere: mock(function (this: any) { return this; }),
-		groupBy: mock(function (this: any) { return this; }),
-		orderBy: mock(function (this: any) { return this; }),
+		select: mock(function (this: any) {
+			return this;
+		}),
+		addSelect: mock(function (this: any) {
+			return this;
+		}),
+		where: mock(function (this: any) {
+			return this;
+		}),
+		andWhere: mock(function (this: any) {
+			return this;
+		}),
+		groupBy: mock(function (this: any) {
+			return this;
+		}),
+		orderBy: mock(function (this: any) {
+			return this;
+		}),
 		getRawOne: mock(() => Promise.resolve({ sum: '1500.00' })),
 		getRawMany: mock(() => Promise.resolve([])),
 	};

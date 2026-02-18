@@ -6,13 +6,14 @@ import { Restaurant } from './entities/restaurant.entity';
 import { CreateRestaurantDto } from './dto/create-restaurant.dto';
 import { ConnectLightspeedDto } from './dto/connect-lightspeed.dto';
 import { ConnectYocoDto } from './dto/connect-yoco.dto';
+import { CreateRestaurantSquareDto } from './dto/create-restaurant-square.dto';
 
 @Injectable()
 export class RestaurantsService {
 	constructor(
 		@InjectRepository(Restaurant)
 		private restaurantRepo: Repository<Restaurant>,
-	) { }
+	) {}
 
 	/**
 	 * Create a restaurant
@@ -64,5 +65,20 @@ export class RestaurantsService {
 	 */
 	async findAllConnectedLightspeed() {
 		return this.restaurantRepo.createQueryBuilder('restaurant').innerJoin('restaurant.lightspeedTokens', 'token').getMany();
+	}
+
+	/**
+	 * Save Square authentication details
+	 */
+	async saveSquareAuth(dto: CreateRestaurantSquareDto) {
+		const restaurant = await this.restaurantRepo.findOne({ where: { name: dto.name } });
+		if (restaurant) {
+			restaurant.squareAccessToken = dto.squareAccessToken;
+			restaurant.squareMerchantId = dto.squareMerchantId;
+			restaurant.squareRefreshToken = dto.squareRefreshToken;
+			return this.restaurantRepo.save(restaurant);
+		} else {
+			return this.restaurantRepo.save(this.restaurantRepo.create(dto));
+		}
 	}
 }

@@ -24,8 +24,8 @@ describe('JwtAuthGuard', () => {
 			getClass: () => ({}),
 			getArgs: () => [],
 			getArgByIndex: () => ({}),
-			switchToRpc: () => ({} as any),
-			switchToWs: () => ({} as any),
+			switchToRpc: () => ({}) as any,
+			switchToWs: () => ({}) as any,
 			getType: () => 'http' as any,
 		} as ExecutionContext;
 	};
@@ -39,11 +39,7 @@ describe('JwtAuthGuard', () => {
 		};
 
 		const module: TestingModule = await Test.createTestingModule({
-			providers: [
-				JwtAuthGuard,
-				{ provide: JwtService, useValue: jwtService },
-				{ provide: UsersService, useValue: usersService },
-			],
+			providers: [JwtAuthGuard, { provide: JwtService, useValue: jwtService }, { provide: UsersService, useValue: usersService }],
 		}).compile();
 
 		guard = module.get<JwtAuthGuard>(JwtAuthGuard);

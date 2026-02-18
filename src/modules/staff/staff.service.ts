@@ -15,7 +15,7 @@ export class StaffService {
 		private inviteRepo: Repository<InviteToken>,
 		private emailService: EmailService,
 		private socketGateway: SocketGateway,
-	) { }
+	) {}
 
 	async getAll(restaurantId: string) {
 		const [users, invites] = await Promise.all([

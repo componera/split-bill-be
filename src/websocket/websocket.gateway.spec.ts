@@ -9,17 +9,14 @@ describe('SocketGateway', () => {
 	let emitMock: ReturnType<typeof mock>;
 
 	beforeEach(async () => {
-		emitMock = mock(() => { });
+		emitMock = mock(() => {});
 		roomManager = {
 			to: mock((room: string) => ({ emit: emitMock })),
-			broadcast: mock(() => { }),
+			broadcast: mock(() => {}),
 		};
 
 		const module = await Test.createTestingModule({
-			providers: [
-				SocketGateway,
-				{ provide: BunWebSocketRoomManager, useValue: roomManager },
-			],
+			providers: [SocketGateway, { provide: BunWebSocketRoomManager, useValue: roomManager }],
 		}).compile();
 
 		gateway = module.get<SocketGateway>(SocketGateway);

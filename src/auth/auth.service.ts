@@ -20,7 +20,7 @@ export class AuthService {
 
 		@InjectRepository(InviteToken)
 		private inviteRepo: Repository<InviteToken>,
-	) { }
+	) {}
 
 	async register(dto: RegisterDto) {
 		const restaurant = this.restaurantRepo.create({
@@ -45,10 +45,7 @@ export class AuthService {
 				{ sub: user.id, restaurantId: restaurant.id, role: user.role },
 				{ secret: process.env.JWT_SECRET, expiresIn: '15m' },
 			),
-			this.jwtService.signAsync(
-				{ sub: user.id },
-				{ secret: process.env.JWT_REFRESH_SECRET, expiresIn: '30d' },
-			),
+			this.jwtService.signAsync({ sub: user.id }, { secret: process.env.JWT_REFRESH_SECRET, expiresIn: '30d' }),
 		]);
 
 		return { accessToken, refreshToken };

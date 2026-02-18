@@ -24,11 +24,20 @@ export class Restaurant {
 	@Column({ nullable: true })
 	lightspeedAccountId?: string;
 
+	@OneToMany(() => LightspeedToken, token => token.restaurant)
+	lightspeedTokens: Relation<LightspeedToken[]>;
+
 	@Column({ nullable: true })
 	yocoSecretKey?: string;
 
-	@OneToMany(() => LightspeedToken, token => token.restaurant)
-	lightspeedTokens: Relation<LightspeedToken[]>;
+	@Column({ nullable: true })
+	squareAccessToken: string;
+
+	@Column({ nullable: true })
+	squareMerchantId: string;
+
+	@Column({ nullable: true })
+	squareRefreshToken: string;
 
 	@OneToMany(() => Bill, bill => bill.restaurant)
 	bills: Relation<Bill[]>;

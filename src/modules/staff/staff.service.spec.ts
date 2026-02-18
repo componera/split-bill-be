@@ -40,7 +40,7 @@ describe('StaffService', () => {
 			sendInvite: mock(() => Promise.resolve()),
 		};
 		socketGateway = {
-			emitStaffUpdated: mock(() => { }),
+			emitStaffUpdated: mock(() => {}),
 		};
 
 		const module: TestingModule = await Test.createTestingModule({
@@ -129,9 +129,7 @@ describe('StaffService', () => {
 
 			const result = await service.promote('user-1');
 
-			expect(userRepo.save).toHaveBeenCalledWith(
-				expect.objectContaining({ role: UserRole.ADMIN }),
-			);
+			expect(userRepo.save).toHaveBeenCalledWith(expect.objectContaining({ role: UserRole.ADMIN }));
 			expect(socketGateway.emitStaffUpdated).toHaveBeenCalled();
 		});
 
@@ -148,9 +146,7 @@ describe('StaffService', () => {
 
 			const result = await service.demote('user-1');
 
-			expect(userRepo.save).toHaveBeenCalledWith(
-				expect.objectContaining({ role: UserRole.STAFF }),
-			);
+			expect(userRepo.save).toHaveBeenCalledWith(expect.objectContaining({ role: UserRole.STAFF }));
 			expect(socketGateway.emitStaffUpdated).toHaveBeenCalled();
 		});
 
