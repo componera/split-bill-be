@@ -33,8 +33,8 @@ describe('YocoService', () => {
 			update: mock(() => Promise.resolve({ affected: 1 })),
 		};
 		socketGateway = {
-			emitPaymentCompleted: mock(() => {}),
-			emitBillUpdated: mock(() => {}),
+			emitPaymentCompleted: mock(() => { }),
+			emitBillUpdated: mock(() => { }),
 		};
 		lightspeedService = {
 			markItemsPaid: mock(() => Promise.resolve()),

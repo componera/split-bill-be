@@ -1,10 +1,10 @@
 import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, Index, JoinColumn, ManyToOne } from 'typeorm';
 import type { Relation } from 'typeorm';
 import { PaymentStatus } from '../enums/payment-status.enum';
-import { Bill } from 'src/modules/bills/entities/bill.entity';
-import { Restaurant } from 'src/modules/restaurants/entities/restaurant.entity';
+import { Bill } from '../../bills/entities/bill.entity';
+import { Restaurant } from '../../restaurants/entities/restaurant.entity';
 
-@Entity('payments')
+@Entity()
 @Index(['bill']) // use relation property
 @Index(['restaurant']) // use relation property
 @Index(['status'])

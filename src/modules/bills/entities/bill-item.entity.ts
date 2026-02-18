@@ -1,11 +1,9 @@
-// src/modules/bills/entities/bill-item.entity.ts
-
 import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, Index, JoinColumn } from 'typeorm';
 import type { Relation } from 'typeorm';
 import { Bill } from './bill.entity';
-import { Payment } from 'src/modules/payments/entities/payment.entity';
+import { Payment } from '../../payments/entities/payment.entity';
 
-@Entity('bill_items')
+@Entity()
 export class BillItem {
 	@PrimaryGeneratedColumn('uuid')
 	id: string;
