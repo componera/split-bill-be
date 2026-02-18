@@ -7,8 +7,8 @@ import { UsersService } from 'src/modules/users/users.service';
 function createMockWs(overrides: Partial<{ readyState: number; data: any; close: ReturnType<typeof mock> }> = {}): any {
 	return {
 		readyState: 1,
-		send: mock(() => { }),
-		close: mock(() => { }),
+		send: mock(() => {}),
+		close: mock(() => {}),
 		data: {},
 		...overrides,
 	};
@@ -23,10 +23,10 @@ describe('createBunWsHandlers', () => {
 
 	beforeEach(() => {
 		roomManager = {
-			addSocket: mock(() => { }),
-			removeSocket: mock(() => { }),
-			addToRoom: mock(() => { }),
-			removeFromRoom: mock(() => { }),
+			addSocket: mock(() => {}),
+			removeSocket: mock(() => {}),
+			addToRoom: mock(() => {}),
+			removeFromRoom: mock(() => {}),
 		};
 		jwtService = {
 			verify: mock(() => ({ sub: 'user-1' })),

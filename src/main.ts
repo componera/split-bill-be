@@ -52,8 +52,7 @@ async function bootstrap() {
 			const url = new URL(req.url);
 
 			// Guard: non-WebSocket requests go to Fastify
-			const isWsUpgrade =
-				url.pathname === WS_PATH && req.headers.get('upgrade')?.toLowerCase() === 'websocket';
+			const isWsUpgrade = url.pathname === WS_PATH && req.headers.get('upgrade')?.toLowerCase() === 'websocket';
 			if (!isWsUpgrade) return handleHttp(req, fastify);
 
 			// Upgrade to Bun's native WebSocket (data passed to ws handlers)
@@ -106,7 +105,7 @@ async function handleHttp(req: Request, fastify: { inject: (opts: any) => Promis
 	});
 }
 
-bootstrap().catch((err) => {
+bootstrap().catch(err => {
 	console.error('[Bootstrap] Fatal error:', err);
 	process.exit(1);
 });

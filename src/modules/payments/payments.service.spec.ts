@@ -29,7 +29,7 @@ describe('PaymentsService', () => {
 			update: mock(() => Promise.resolve({ affected: 1 })),
 		};
 		socketGateway = {
-			emitPaymentCompleted: mock(() => { }),
+			emitPaymentCompleted: mock(() => {}),
 		};
 
 		const module: TestingModule = await Test.createTestingModule({
@@ -49,9 +49,7 @@ describe('PaymentsService', () => {
 
 			const result = await service.create(data as any);
 
-			expect(paymentRepo.create).toHaveBeenCalledWith(
-				expect.objectContaining({ status: PaymentStatus.PENDING }),
-			);
+			expect(paymentRepo.create).toHaveBeenCalledWith(expect.objectContaining({ status: PaymentStatus.PENDING }));
 			expect(paymentRepo.save).toHaveBeenCalled();
 		});
 	});
@@ -66,9 +64,7 @@ describe('PaymentsService', () => {
 				where: { id: 'pay-1' },
 				relations: ['restaurant', 'bill'],
 			});
-			expect(paymentRepo.save).toHaveBeenCalledWith(
-				expect.objectContaining({ status: PaymentStatus.SUCCESS }),
-			);
+			expect(paymentRepo.save).toHaveBeenCalledWith(expect.objectContaining({ status: PaymentStatus.SUCCESS }));
 			expect(socketGateway.emitPaymentCompleted).toHaveBeenCalledWith('rest-1', 'bill-1', expect.anything());
 		});
 
@@ -86,10 +82,7 @@ describe('PaymentsService', () => {
 		it('should update payment status to FAILED', async () => {
 			await service.markFailed('pay-1');
 
-			expect(paymentRepo.update).toHaveBeenCalledWith(
-				{ id: 'pay-1' },
-				{ status: PaymentStatus.FAILED },
-			);
+			expect(paymentRepo.update).toHaveBeenCalledWith({ id: 'pay-1' }, { status: PaymentStatus.FAILED });
 		});
 	});
 

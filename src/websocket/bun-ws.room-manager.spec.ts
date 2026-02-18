@@ -5,8 +5,8 @@ import { BunWebSocketRoomManager } from './bun-ws.room-manager';
 function createMockWs(readyState = 1): any {
 	return {
 		readyState,
-		send: mock(() => { }),
-		close: mock(() => { }),
+		send: mock(() => {}),
+		close: mock(() => {}),
 		data: {},
 	};
 }

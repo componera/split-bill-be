@@ -15,4 +15,4 @@ import { WebSocketModule } from '../../websocket/websocket.module';
 	controllers: [StaffController],
 	exports: [StaffService, UsersService],
 })
-export class StaffModule { }
+export class StaffModule {}

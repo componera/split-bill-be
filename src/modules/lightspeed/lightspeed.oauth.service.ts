@@ -8,7 +8,7 @@ export class LightspeedOAuthService {
 	constructor(
 		@InjectRepository(LightspeedToken)
 		private tokenRepo: Repository<LightspeedToken>,
-	) { }
+	) {}
 
 	getAuthUrl(restaurantId: string) {
 		const params = new URLSearchParams({

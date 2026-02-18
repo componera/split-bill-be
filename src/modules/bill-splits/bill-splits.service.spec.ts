@@ -15,10 +15,7 @@ describe('BillSplitsService', () => {
 		};
 
 		const module: TestingModule = await Test.createTestingModule({
-			providers: [
-				BillSplitsService,
-				{ provide: getRepositoryToken(BillSplit), useValue: splitRepo },
-			],
+			providers: [BillSplitsService, { provide: getRepositoryToken(BillSplit), useValue: splitRepo }],
 		}).compile();
 
 		service = module.get<BillSplitsService>(BillSplitsService);

@@ -15,7 +15,7 @@ export class AdminService {
 
 		@InjectRepository(Payment)
 		private paymentRepo: Repository<Payment>,
-	) { }
+	) {}
 
 	async getStats(restaurantId: string) {
 		const activeBills = await this.billRepo.count({
@@ -62,7 +62,7 @@ export class AdminService {
 			.orderBy('date', 'ASC')
 			.getRawMany();
 
-		return rows.map((r) => ({
+		return rows.map(r => ({
 			date: r.date,
 			revenue: Number(r.revenue || 0),
 			payments: Number(r.payments || 0),

@@ -7,4 +7,4 @@ import { QrService } from './qr.service';
 	controllers: [QrController],
 	exports: [QrService],
 })
-export class QrModule { }
+export class QrModule {}

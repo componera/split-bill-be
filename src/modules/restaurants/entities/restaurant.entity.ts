@@ -3,6 +3,7 @@ import { Entity, PrimaryGeneratedColumn, Column, OneToMany, CreateDateColumn, Up
 import type { Relation } from 'typeorm';
 import { LightspeedToken } from '../../lightspeed/entities/lightspeed-token.entity';
 import { Bill } from '../../bills/entities/bill.entity';
+import { SquareLocation } from 'src/modules/square/square-location.entity';
 
 @Entity()
 export class Restaurant {
@@ -24,14 +25,17 @@ export class Restaurant {
 	@Column({ nullable: true })
 	lightspeedAccountId?: string;
 
-	@Column({ nullable: true })
-	yocoSecretKey?: string;
-
 	@OneToMany(() => LightspeedToken, token => token.restaurant)
 	lightspeedTokens: Relation<LightspeedToken[]>;
 
+	@Column({ nullable: true })
+	yocoSecretKey?: string;
+
 	@OneToMany(() => Bill, bill => bill.restaurant)
 	bills: Relation<Bill[]>;
+
+	@Column({ nullable: true })
+	selectedLocationId?: string; // keep track of selected location
 
 	@CreateDateColumn()
 	createdAt: Date;

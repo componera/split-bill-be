@@ -28,10 +28,7 @@ describe('UsersService', () => {
 		};
 
 		const module: TestingModule = await Test.createTestingModule({
-			providers: [
-				UsersService,
-				{ provide: getRepositoryToken(User), useValue: userRepo },
-			],
+			providers: [UsersService, { provide: getRepositoryToken(User), useValue: userRepo }],
 		}).compile();
 
 		service = module.get<UsersService>(UsersService);
@@ -96,9 +93,7 @@ describe('UsersService', () => {
 		it('should default role to STAFF', async () => {
 			await service.create('Jane', 'Doe', 'jane@test.com', 'pass', 'rest-1');
 
-			expect(userRepo.create).toHaveBeenCalledWith(
-				expect.objectContaining({ role: UserRole.STAFF }),
-			);
+			expect(userRepo.create).toHaveBeenCalledWith(expect.objectContaining({ role: UserRole.STAFF }));
 		});
 	});
 

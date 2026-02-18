@@ -8,7 +8,7 @@ export class JwtAuthGuard implements CanActivate {
 	constructor(
 		private jwtService: JwtService,
 		private usersService: UsersService,
-	) { }
+	) {}
 
 	async canActivate(context: ExecutionContext): Promise<boolean> {
 		const req = context.switchToHttp().getRequest();

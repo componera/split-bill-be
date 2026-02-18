@@ -18,7 +18,9 @@ describe('RestaurantsService', () => {
 	};
 
 	const mockQueryBuilder = {
-		innerJoin: mock(function (this: any) { return this; }),
+		innerJoin: mock(function (this: any) {
+			return this;
+		}),
 		getMany: mock(() => Promise.resolve([])),
 	};
 
@@ -31,10 +33,7 @@ describe('RestaurantsService', () => {
 		};
 
 		const module: TestingModule = await Test.createTestingModule({
-			providers: [
-				RestaurantsService,
-				{ provide: getRepositoryToken(Restaurant), useValue: restaurantRepo },
-			],
+			providers: [RestaurantsService, { provide: getRepositoryToken(Restaurant), useValue: restaurantRepo }],
 		}).compile();
 
 		service = module.get<RestaurantsService>(RestaurantsService);
@@ -46,9 +45,7 @@ describe('RestaurantsService', () => {
 
 			const result = await service.create(dto);
 
-			expect(restaurantRepo.create).toHaveBeenCalledWith(
-				expect.objectContaining({ name: 'New Place', email: 'new@place.com' }),
-			);
+			expect(restaurantRepo.create).toHaveBeenCalledWith(expect.objectContaining({ name: 'New Place', email: 'new@place.com' }));
 			expect(restaurantRepo.save).toHaveBeenCalled();
 			expect(result).toHaveProperty('id');
 		});
@@ -80,9 +77,7 @@ describe('RestaurantsService', () => {
 				refreshToken: 'ref',
 			});
 
-			expect(restaurantRepo.save).toHaveBeenCalledWith(
-				expect.objectContaining({ lightspeedAccountId: 'ls-acc-1' }),
-			);
+			expect(restaurantRepo.save).toHaveBeenCalledWith(expect.objectContaining({ lightspeedAccountId: 'ls-acc-1' }));
 		});
 	});
 
@@ -92,9 +87,7 @@ describe('RestaurantsService', () => {
 
 			const result = await service.connectYoco('rest-1', { secretKey: 'sk_test_123', publicKey: 'pk_test_123' });
 
-			expect(restaurantRepo.save).toHaveBeenCalledWith(
-				expect.objectContaining({ yocoSecretKey: 'sk_test_123' }),
-			);
+			expect(restaurantRepo.save).toHaveBeenCalledWith(expect.objectContaining({ yocoSecretKey: 'sk_test_123' }));
 		});
 	});
 

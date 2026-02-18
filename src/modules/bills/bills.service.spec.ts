@@ -40,8 +40,8 @@ describe('BillsService', () => {
 			update: mock(() => Promise.resolve({ affected: 1 })),
 		};
 		socketGateway = {
-			emitBillUpdated: mock(() => { }),
-			emitBillCreated: mock(() => { }),
+			emitBillUpdated: mock(() => {}),
+			emitBillCreated: mock(() => {}),
 		};
 
 		const module: TestingModule = await Test.createTestingModule({
