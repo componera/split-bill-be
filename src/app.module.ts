@@ -10,23 +10,12 @@ import { QrModule } from './modules/qr/qr.module';
 import { YocoModule } from './modules/yoco/yoco.module';
 import { ConfigModule } from '@nestjs/config';
 import { AppController } from './app.controller';
-import { YocoController } from './modules/yoco/yoco.controller';
 import { AuthModule } from './auth/auth.module';
 import { UsersModule } from './modules/users/users.module';
 import { AdminModule } from './modules/admin/admin.module';
 import { PaymentsModule } from './modules/payments/payments.module';
 import { StaffModule } from './modules/staff/staff.module';
-import { AuthController } from './auth/auth.controller';
-import { SquareController } from './modules/square/square.controller';
-import { StaffController } from './modules/staff/staff.controller';
-import { RestaurantsController } from './modules/restaurants/restaurants.controller';
-import { QrController } from './modules/qr/qr.controller';
-import { PaymentsController } from './modules/payments/payments.controller';
-import { LightspeedController } from './modules/lightspeed/lightspeed.controller';
-import { LightspeedWebhookController } from './modules/lightspeed/lightspeed.webhook.controller';
-import { BillsController } from './modules/bills/bills.controller';
-import { BillSplitsController } from './modules/bill-splits/bill-splits.controller';
-import { AdminController } from './modules/admin/admin.controller';
+import { SquareModule } from './modules/square/square.module';
 
 @Module({
 	imports: [
@@ -55,11 +44,12 @@ import { AdminController } from './modules/admin/admin.controller';
 		QrModule,
 		PaymentsModule,
 		ScheduleModule.forRoot(),
+		SquareModule,
 		StaffModule,
 		UsersModule,
 		WebSocketModule,
 		YocoModule,
 	],
-	controllers: [AdminController, AppController, AuthController, BillsController, BillSplitsController, QrController, LightspeedController, LightspeedWebhookController, PaymentsController, RestaurantsController, SquareController, StaffController, YocoController],
+	controllers: [AppController],
 })
 export class AppModule { }

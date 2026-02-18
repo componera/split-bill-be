@@ -9,6 +9,7 @@ import { BillItem } from '../bills/entities/bill-item.entity';
 
 import { WebSocketModule } from '../../websocket/websocket.module';
 import { LightspeedModule } from '../lightspeed/lightspeed.module';
+import { YocoController } from './yoco.controller';
 
 @Module({
 	imports: [
@@ -20,6 +21,7 @@ import { LightspeedModule } from '../lightspeed/lightspeed.module';
 		WebSocketModule, // for SocketGateway
 		LightspeedModule, // for LightspeedService
 	],
+	controllers: [YocoController],
 	providers: [YocoService],
 	exports: [YocoService],
 })
