@@ -1,5 +1,5 @@
 import { Entity, PrimaryColumn, Column, ManyToOne } from "typeorm";
-import { Restaurant } from "../restaurants/entities/restaurant.entity";
+import { Restaurant } from "../../restaurants/entities/restaurant.entity";
 
 @Entity()
 export class SquareLocation {
@@ -9,7 +9,7 @@ export class SquareLocation {
     @Column()
     name: string;
 
-    @ManyToOne(() => Restaurant, r => r.squareLocations)
+    @ManyToOne(() => Restaurant)
     restaurant: Restaurant;
 
     @Column({ default: false })

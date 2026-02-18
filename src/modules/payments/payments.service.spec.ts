@@ -29,7 +29,7 @@ describe('PaymentsService', () => {
 			update: mock(() => Promise.resolve({ affected: 1 })),
 		};
 		socketGateway = {
-			emitPaymentCompleted: mock(() => {}),
+			emitPaymentCompleted: mock(() => { }),
 		};
 
 		const module: TestingModule = await Test.createTestingModule({

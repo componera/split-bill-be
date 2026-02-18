@@ -23,4 +23,4 @@ import { LightspeedModule } from '../lightspeed/lightspeed.module';
 	providers: [YocoService],
 	exports: [YocoService],
 })
-export class YocoModule {}
+export class YocoModule { }

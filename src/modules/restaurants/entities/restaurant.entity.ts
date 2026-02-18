@@ -3,7 +3,6 @@ import { Entity, PrimaryGeneratedColumn, Column, OneToMany, CreateDateColumn, Up
 import type { Relation } from 'typeorm';
 import { LightspeedToken } from '../../lightspeed/entities/lightspeed-token.entity';
 import { Bill } from '../../bills/entities/bill.entity';
-import { SquareLocation } from 'src/modules/square/square-location.entity';
 
 @Entity()
 export class Restaurant {

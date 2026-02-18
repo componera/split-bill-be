@@ -1,4 +1,4 @@
-import { UserRole } from 'src/modules/users/entities/user.entity';
+import { UserRole } from '../../modules/users/entities/user.entity';
 import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn } from 'typeorm';
 
 @Entity()

@@ -2,8 +2,8 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { SquareAuth } from './square.auth.entity';
-import { SquareLocation } from './square-location.entity';
+import { SquareAuth } from './entities/square.auth.entity';
+import { SquareLocation } from './entities/square-location.entity';
 import { Restaurant } from '../restaurants/entities/restaurant.entity';
 
 @Injectable()

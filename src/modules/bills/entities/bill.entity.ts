@@ -1,4 +1,3 @@
-// src/modules/bills/entities/bill.entity.ts
 import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, OneToMany, CreateDateColumn, UpdateDateColumn } from 'typeorm';
 import type { Relation } from 'typeorm';
 import { Restaurant } from '../../restaurants/entities/restaurant.entity';

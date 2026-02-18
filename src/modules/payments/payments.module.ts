@@ -25,4 +25,4 @@ import { AuthModule } from 'src/auth/auth.module';
 	providers: [PaymentsService],
 	exports: [PaymentsService],
 })
-export class PaymentsModule {}
+export class PaymentsModule { }
