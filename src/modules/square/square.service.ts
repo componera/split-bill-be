@@ -2,6 +2,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+import { SquareClient, SquareEnvironment } from "square";
 import { SquareAuth } from './entities/square.auth.entity';
 import { SquareLocation } from './entities/square-location.entity';
 import { Restaurant } from '../restaurants/entities/restaurant.entity';
@@ -34,7 +35,7 @@ export class SquareService {
                 accessToken: data.squareAccessToken,
                 refreshToken: data.squareRefreshToken,
                 merchantId: data.squareMerchantId,
-                expiresAt: data.expiresAt,
+                expiresAt: data.expiresAt ? new Date(data.expiresAt) : null,
             });
         } else {
             const auth = this.authRepo.create({
@@ -42,7 +43,7 @@ export class SquareService {
                 accessToken: data.squareAccessToken,
                 refreshToken: data.squareRefreshToken,
                 merchantId: data.squareMerchantId,
-                expiresAt: data.expiresAt,
+                expiresAt: data.expiresAt ? new Date(data.expiresAt) : null,
             });
             return this.authRepo.save(auth);
         }
@@ -50,38 +51,86 @@ export class SquareService {
 
 
     /** Fetch locations and mark the selected one */
-    async getLocations(restaurantId: string): Promise<SquareLocation[]> {
-        const restaurant = await this.restaurantRepo.findOne({
-            where: { id: restaurantId },
-            relations: ["squareLocations"],
+    async getLocations(restaurantId: string) {
+        let auth = await this.authRepo.findOne({
+            where: { restaurant: { id: restaurantId } },
         });
 
-        if (!restaurant) return [];
+        // Not connected yet
+        if (!auth) {
+            return [];
+        }
 
-        return restaurant.squareLocations.map(loc => ({
-            ...loc,
-            isSelected: loc.id === restaurant.selectedLocationId,
+        // Refresh token if expired
+        if (auth.expiresAt && new Date() > auth.expiresAt) {
+            auth = await this.refreshAccessToken(auth);
+        }
+
+        const client = new SquareClient({
+            token: auth.accessToken,
+            environment: process.env.SQUARE_ENV === "production"
+                ? SquareEnvironment.Production
+                : SquareEnvironment.Sandbox,
+        });
+
+        const response = await client.locations.list();
+        const locations = response.locations ?? [];
+
+        return locations.map(loc => ({
+            id: loc.id,
+            name: loc.name,
+            isSelected: auth.selectedLocationId === loc.id,
         }));
     }
+
 
     /** Save the selected location */
     async selectLocation(
         restaurantId: string,
         locationId: string
-    ): Promise<SquareLocation | null> {
-        const restaurant = await this.restaurantRepo.findOne({
-            where: { id: restaurantId },
+    ) {
+        const auth = await this.authRepo.findOne({
+            where: { restaurant: { id: restaurantId } },
         });
-        if (!restaurant) return null;
 
-        // Update selectedLocationId in restaurant
-        restaurant.selectedLocationId = locationId;
-        await this.restaurantRepo.save(restaurant);
+        if (!auth) throw new Error("Square not connected");
 
-        // Optional: mark isSelected on locations table
-        await this.locRepo.update({ restaurant: { id: restaurantId } }, { isSelected: false });
-        await this.locRepo.update({ id: locationId }, { isSelected: true });
+        auth.selectedLocationId = locationId;
+        await this.authRepo.save(auth);
 
-        return this.locRepo.findOne({ where: { id: locationId } });
+        return {
+            locationId,
+        };
+    }
+
+    async refreshAccessToken(auth: SquareAuth): Promise<SquareAuth> {
+        if (!auth.refreshToken) {
+            throw new Error("No refresh token available");
+        }
+
+        const response = await fetch(`${process.env.SQUARE_API_URL}/oauth2/token`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                client_id: process.env.SQUARE_APP_ID,
+                client_secret: process.env.SQUARE_APP_SECRET,
+                grant_type: 'refresh_token',
+                refresh_token: auth.refreshToken,
+            }),
+        });
+
+        if (!response.ok) {
+            throw new Error(`Failed to refresh Square token: ${response.statusText}`);
+        }
+
+        const data = await response.json();
+
+        auth.accessToken = data.access_token;
+        auth.refreshToken = data.refresh_token;
+        auth.expiresAt = data.expires_at ? new Date(data.expires_at) : null;
+
+        await this.authRepo.save(auth);
+
+        return auth;
     }
 }

@@ -1,7 +1,6 @@
 import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, ManyToOne } from 'typeorm';
 import { Restaurant } from '../../restaurants/entities/restaurant.entity';
 
-// square-auth.entity.ts
 @Entity('square_auth')
 export class SquareAuth {
     @PrimaryGeneratedColumn('uuid')
