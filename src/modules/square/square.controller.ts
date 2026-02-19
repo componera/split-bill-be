@@ -1,7 +1,6 @@
 import { Controller, Get, Req, Post, Body } from "@nestjs/common";
 import { SquareService } from "./square.service";
 
-// square.controller.ts
 @Controller("square")
 export class SquareController {
     constructor(private squareService: SquareService) { }
@@ -17,7 +16,7 @@ export class SquareController {
             expiresAt?: string;
         }
     ) {
-        const restaurantId = req.user.restaurantId; // get from session/JWT
+        const restaurantId = req.user.restaurantId;
 
         return this.squareService.saveAuth({
             restaurantId,
@@ -28,14 +27,13 @@ export class SquareController {
     @Get("locations")
     async getLocations(@Req() req) {
         const restaurantId = req.user.restaurantId;
-
         return this.squareService.getLocations(restaurantId);
     }
 
     @Post("select-location")
     async selectLocation(
         @Req() req,
-        @Body() body: { locationId: string; locationName: string }
+        @Body() body: { locationId: string }
     ) {
         const restaurantId = req.user.restaurantId;
 
