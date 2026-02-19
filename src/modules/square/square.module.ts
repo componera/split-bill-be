@@ -5,9 +5,10 @@ import { SquareController } from "./square.controller";
 import { SquareAuth } from "./entities/square.auth.entity";
 import { SquareLocation } from "./entities/square-location.entity";
 import { Restaurant } from "../restaurants/entities/restaurant.entity";
+import { AuthModule } from "src/auth/auth.module";
 
 @Module({
-    imports: [TypeOrmModule.forFeature([SquareAuth, SquareLocation, Restaurant])],
+    imports: [TypeOrmModule.forFeature([SquareAuth, SquareLocation, Restaurant]), AuthModule],
     providers: [SquareService],
     controllers: [SquareController],
     exports: [SquareService],
