@@ -20,8 +20,6 @@ export class SquareController {
     ) {
         const restaurantId = req.user.restaurantId;
 
-        return true; // temporary bypass for testing frontend flow without hitting backend errors
-
         return this.squareService.saveAuth({
             restaurantId,
             ...body,
