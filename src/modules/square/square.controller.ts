@@ -1,10 +1,12 @@
-import { Controller, Get, Req, Post, Body } from "@nestjs/common";
+import { Controller, Get, Req, Post, Body, UseGuards } from "@nestjs/common";
 import { SquareService } from "./square.service";
+import { JwtAuthGuard } from "src/auth/guards/jwt-auth.guard";
 
 @Controller("square")
 export class SquareController {
     constructor(private squareService: SquareService) { }
 
+    @UseGuards(JwtAuthGuard)
     @Post("auth")
     async saveSquareAuth(
         @Req() req,
