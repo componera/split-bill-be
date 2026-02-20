@@ -12,16 +12,10 @@ export class JwtAuthGuard implements CanActivate {
 	async canActivate(context: ExecutionContext): Promise<boolean> {
 		const req = context.switchToHttp().getRequest();
 
-		// Try Authorization header first
-		let token = req.headers.authorization?.split(' ')[1];
-
-		// If not in header, try cookie
-		if (!token && req.cookies?.access_token) {
-			token = req.cookies.access_token;
-		}
+		const token = req.cookies?.access_token;
 
 		if (!token) {
-			throw new UnauthorizedException('Missing token');
+			throw new UnauthorizedException("Missing token");
 		}
 
 		try {
@@ -30,7 +24,7 @@ export class JwtAuthGuard implements CanActivate {
 			req.user = user;
 			return true;
 		} catch {
-			throw new UnauthorizedException('Invalid token');
+			throw new UnauthorizedException("Invalid token");
 		}
 	}
 }
