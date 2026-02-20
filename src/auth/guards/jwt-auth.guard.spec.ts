@@ -10,10 +10,15 @@ describe('JwtAuthGuard (cookie-based)', () => {
 	let jwtService: any;
 	let usersService: any;
 
-	const mockUser = { id: 'user-1', email: 'test@test.com', restaurantId: 'rest-1', role: 'admin' };
+	const mockUser = {
+		id: 'user-1',
+		email: 'test@test.com',
+		restaurantId: 'rest-1',
+		role: 'admin',
+	};
 
 	const createMockContext = (cookieToken?: string): ExecutionContext => {
-		const request = { cookies: { accessToken: cookieToken }, user: null };
+		const request = { cookies: { access_token: cookieToken }, user: null };
 		return {
 			switchToHttp: () => ({
 				getRequest: () => request,
@@ -31,8 +36,12 @@ describe('JwtAuthGuard (cookie-based)', () => {
 	};
 
 	beforeEach(async () => {
-		jwtService = { verify: mock(() => ({ sub: 'user-1' })) };
-		usersService = { findById: mock(() => Promise.resolve(mockUser)) };
+		jwtService = {
+			verify: mock(() => ({ sub: 'user-1' })),
+		};
+		usersService = {
+			findById: mock(() => Promise.resolve(mockUser)),
+		};
 
 		const module: TestingModule = await Test.createTestingModule({
 			providers: [
@@ -45,7 +54,7 @@ describe('JwtAuthGuard (cookie-based)', () => {
 		guard = module.get<JwtAuthGuard>(JwtAuthGuard);
 	});
 
-	it('allows access with a valid accessToken cookie', async () => {
+	it('allows access with a valid access_token cookie', async () => {
 		const context = createMockContext('valid-token');
 
 		const result = await guard.canActivate(context);
@@ -64,7 +73,7 @@ describe('JwtAuthGuard (cookie-based)', () => {
 		expect(req.user).toEqual(mockUser);
 	});
 
-	it('throws UnauthorizedException when no accessToken cookie', async () => {
+	it('throws UnauthorizedException when cookie is missing', async () => {
 		const context = createMockContext(undefined);
 
 		await expect(guard.canActivate(context)).rejects.toThrow(UnauthorizedException);
