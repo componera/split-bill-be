@@ -5,15 +5,15 @@ import { JwtService } from '@nestjs/jwt';
 import { JwtAuthGuard } from './jwt-auth.guard';
 import { UsersService } from 'src/modules/users/users.service';
 
-describe('JwtAuthGuard', () => {
+describe('JwtAuthGuard (cookie-based)', () => {
 	let guard: JwtAuthGuard;
 	let jwtService: any;
 	let usersService: any;
 
 	const mockUser = { id: 'user-1', email: 'test@test.com', restaurantId: 'rest-1', role: 'admin' };
 
-	const createMockContext = (authHeader?: string): ExecutionContext => {
-		const request = { headers: { authorization: authHeader }, user: null };
+	const createMockContext = (cookieToken?: string): ExecutionContext => {
+		const request = { cookies: { accessToken: cookieToken }, user: null };
 		return {
 			switchToHttp: () => ({
 				getRequest: () => request,
@@ -31,22 +31,22 @@ describe('JwtAuthGuard', () => {
 	};
 
 	beforeEach(async () => {
-		jwtService = {
-			verify: mock(() => ({ sub: 'user-1' })),
-		};
-		usersService = {
-			findById: mock(() => Promise.resolve(mockUser)),
-		};
+		jwtService = { verify: mock(() => ({ sub: 'user-1' })) };
+		usersService = { findById: mock(() => Promise.resolve(mockUser)) };
 
 		const module: TestingModule = await Test.createTestingModule({
-			providers: [JwtAuthGuard, { provide: JwtService, useValue: jwtService }, { provide: UsersService, useValue: usersService }],
+			providers: [
+				JwtAuthGuard,
+				{ provide: JwtService, useValue: jwtService },
+				{ provide: UsersService, useValue: usersService },
+			],
 		}).compile();
 
 		guard = module.get<JwtAuthGuard>(JwtAuthGuard);
 	});
 
-	it('should allow access with a valid Bearer token', async () => {
-		const context = createMockContext('Bearer valid-token');
+	it('allows access with a valid accessToken cookie', async () => {
+		const context = createMockContext('valid-token');
 
 		const result = await guard.canActivate(context);
 
@@ -55,8 +55,8 @@ describe('JwtAuthGuard', () => {
 		expect(usersService.findById).toHaveBeenCalledWith('user-1');
 	});
 
-	it('should attach user to request', async () => {
-		const context = createMockContext('Bearer valid-token');
+	it('attaches user to request', async () => {
+		const context = createMockContext('valid-token');
 
 		await guard.canActivate(context);
 
@@ -64,24 +64,18 @@ describe('JwtAuthGuard', () => {
 		expect(req.user).toEqual(mockUser);
 	});
 
-	it('should throw UnauthorizedException when no auth header', async () => {
+	it('throws UnauthorizedException when no accessToken cookie', async () => {
 		const context = createMockContext(undefined);
 
-		expect(guard.canActivate(context)).rejects.toThrow(UnauthorizedException);
+		await expect(guard.canActivate(context)).rejects.toThrow(UnauthorizedException);
 	});
 
-	it('should throw UnauthorizedException when header is not Bearer', async () => {
-		const context = createMockContext('Basic some-token');
-
-		expect(guard.canActivate(context)).rejects.toThrow(UnauthorizedException);
-	});
-
-	it('should throw UnauthorizedException when token is invalid', async () => {
+	it('throws UnauthorizedException when token is invalid', async () => {
 		jwtService.verify.mockImplementation(() => {
 			throw new Error('invalid token');
 		});
-		const context = createMockContext('Bearer invalid-token');
+		const context = createMockContext('invalid-token');
 
-		expect(guard.canActivate(context)).rejects.toThrow(UnauthorizedException);
+		await expect(guard.canActivate(context)).rejects.toThrow(UnauthorizedException);
 	});
 });
