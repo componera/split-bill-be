@@ -1,4 +1,3 @@
-// src/auth/guards/jwt-auth.guard.ts
 import { Injectable, CanActivate, ExecutionContext, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { UsersService } from 'src/modules/users/users.service';
@@ -8,17 +7,23 @@ export class JwtAuthGuard implements CanActivate {
 	constructor(
 		private jwtService: JwtService,
 		private usersService: UsersService,
-	) {}
+	) { }
 
 	async canActivate(context: ExecutionContext): Promise<boolean> {
 		const req = context.switchToHttp().getRequest();
-		const authHeader = req.headers.authorization;
 
-		if (!authHeader?.startsWith('Bearer ')) {
+		// Try Authorization header first
+		let token = req.headers.authorization?.split(' ')[1];
+
+		// If not in header, try cookie
+		if (!token && req.cookies?.access_token) {
+			token = req.cookies.access_token;
+		}
+
+		if (!token) {
 			throw new UnauthorizedException('Missing token');
 		}
 
-		const token = authHeader.split(' ')[1];
 		try {
 			const payload: any = this.jwtService.verify(token);
 			const user = await this.usersService.findById(payload.sub);
