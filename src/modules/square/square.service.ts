@@ -49,6 +49,41 @@ export class SquareService {
         }
     }
 
+    async saveLocations(
+        restaurant: Restaurant,
+        accessToken: string,
+    ) {
+        const res = await fetch("https://connect.squareup.com/v2/locations", {
+            headers: {
+                Authorization: `Bearer ${accessToken}`,
+                "Content-Type": "application/json",
+            },
+        });
+
+        if (!res.ok) {
+            throw new Error("Failed to fetch Square locations");
+        }
+
+        const data = await res.json();
+        const locations = data.locations ?? [];
+
+        // Clear old locations first (important for reconnect flow)
+        await this.locRepo.delete({ restaurant: { id: restaurant.id } });
+
+        const entities = locations.map(loc =>
+            this.locRepo.create({
+                id: loc.id,
+                name: loc.name,
+                restaurant,
+                isSelected: false,
+            })
+        );
+
+        await this.locRepo.save(entities);
+
+        return entities;
+    }
+
 
     /** Fetch locations and mark the selected one */
     async getLocations(restaurantId: string) {
