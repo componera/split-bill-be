@@ -9,14 +9,19 @@ describe('UsersService', () => {
 	let service: UsersService;
 	let userRepo: any;
 
-	const mockUser: Partial<User> = {
+	const mockUser: User = {
 		id: 'user-1',
 		firstName: 'John',
 		lastName: 'Doe',
 		email: 'john@test.com',
+		emailVerified: false,
 		password: '$2b$10$hashedpassword',
 		role: UserRole.STAFF,
 		restaurantId: 'rest-1',
+		restaurant: { id: 'rest-1' } as any,
+		refreshToken: null, // include all required fields
+		isActive: true,
+		createdAt: new Date(),
 	};
 
 	beforeEach(async () => {
@@ -61,14 +66,20 @@ describe('UsersService', () => {
 
 			const result = await service.findById('user-1');
 
-			expect(userRepo.findOne).toHaveBeenCalledWith({ where: { id: 'user-1' } });
+			expect(userRepo.findOne).toHaveBeenCalledWith({
+				where: { id: 'user-1' },
+				relations: ['restaurant'], // <-- required now
+			});
+
 			expect(result).toEqual(mockUser);
 		});
 
 		it('should throw NotFoundException if user not found', async () => {
 			userRepo.findOne.mockResolvedValue(null);
 
-			expect(service.findById('unknown')).rejects.toThrow(NotFoundException);
+			await expect(service.findById('unknown'))
+				.rejects
+				.toThrow(NotFoundException);
 		});
 	});
 
