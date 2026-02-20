@@ -17,7 +17,16 @@ export class AuthController {
 	@Get("me")
 	@UseGuards(JwtAuthGuard)
 	getMe(@Req() req) {
-		return req.user;
+		const user = req.user;
+
+		return {
+			id: user.id,
+			email: user.email,
+			role: user.role,
+			restaurantId: user.restaurantId,
+			firstName: user.firstName,
+			lastName: user.lastName,
+		};
 	}
 
 	@Post('register')
