@@ -20,10 +20,17 @@ export class SquareController {
     ) {
         const restaurantId = req.user.restaurantId;
 
-        return this.squareService.saveAuth({
+        await this.squareService.saveLocations(
+            req.user.restaurant,
+            body.squareAccessToken,
+        );
+
+        await this.squareService.saveAuth({
             restaurantId,
             ...body,
         });
+
+        return { success: true };
     }
 
     @Get("locations")
