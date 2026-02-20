@@ -41,6 +41,7 @@ export class AuthController {
 		res.setCookie('access_token', tokens.accessToken, {
 			httpOnly: true,
 			path: '/',
+			domain: '.divvytab.com',
 			sameSite: 'none',                   // allows top-level redirects
 			secure: true,
 			maxAge: 60 * 15,                   // 15 minutes
@@ -50,6 +51,7 @@ export class AuthController {
 		res.setCookie('refresh_token', tokens.refreshToken, {
 			httpOnly: true,
 			path: '/',
+			domain: '.divvytab.com',
 			sameSite: 'none',
 			secure: true,
 			maxAge: 60 * 60 * 24 * 30,         // 30 days
@@ -71,6 +73,7 @@ export class AuthController {
 		res.setCookie('access_token', tokens.accessToken, {
 			httpOnly: true,
 			path: '/',
+			domain: '.divvytab.com',
 			sameSite: 'none',                   // allows top-level redirects
 			secure: true,
 			maxAge: 60 * 15,                   // 15 minutes
@@ -80,6 +83,7 @@ export class AuthController {
 		res.setCookie('refresh_token', tokens.refreshToken, {
 			httpOnly: true,
 			path: '/',
+			domain: '.divvytab.com',
 			sameSite: 'none',
 			secure: true,
 			maxAge: 60 * 60 * 24 * 30,         // 30 days
