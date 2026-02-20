@@ -29,7 +29,15 @@ async function bootstrap() {
 		},
 	);
 
-	await app.register(cookie);
+	await app.register(cookie, {
+		parseOptions: {
+			domain: '.divvytab.com',          // matches your frontend/backend
+			httpOnly: true,
+			path: '/',
+			sameSite: 'lax',
+			secure: process.env.NODE_ENV === 'production',
+		},
+	});
 
 	app.enableCors({
 		origin: process.env.FRONTEND_URL || true,
