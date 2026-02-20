@@ -93,7 +93,10 @@ describe('AuthService (cookie-based)', () => {
 		it('returns tokens for valid credentials', async () => {
 			userRepo.findOne.mockResolvedValue(mockUser);
 
-			const result = await service.login('test@example.com', 'password123');
+			const result = await service.login({
+				email: 'test@example.com',
+				password: 'password123',
+			});
 
 			expect(userRepo.findOne).toHaveBeenCalledWith({ where: { email: 'test@example.com' } });
 			expect(Bun.password.verify).toHaveBeenCalledWith('password123', '$2b$10$hashedpassword');
@@ -103,13 +106,19 @@ describe('AuthService (cookie-based)', () => {
 
 		it('throws UnauthorizedException for invalid user', async () => {
 			userRepo.findOne.mockResolvedValue(null);
-			await expect(service.login('nobody@test.com', 'pass')).rejects.toThrow(UnauthorizedException);
+			await expect(service.login({
+				email: 'nobody@test.com',
+				password: 'pass',
+			})).rejects.toThrow(UnauthorizedException);
 		});
 
 		it('throws UnauthorizedException for wrong password', async () => {
 			userRepo.findOne.mockResolvedValue(mockUser);
 			vi.spyOn(Bun.password, 'verify').mockResolvedValue(false);
-			await expect(service.login('test@example.com', 'wrongpass')).rejects.toThrow(UnauthorizedException);
+			await expect(service.login({
+				email: 'test@example.com',
+				password: 'wrong-password',
+			})).rejects.toThrow(UnauthorizedException);
 		});
 	});
 
