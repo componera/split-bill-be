@@ -53,7 +53,7 @@ export class SquareService {
         restaurant: Restaurant,
         accessToken: string,
     ) {
-        const res = await fetch("https://connect.squareup.com/v2/locations", {
+        const res = await fetch(`${process.env.SQUARE_API_URL}/v2/locations`, {
             headers: {
                 Authorization: `Bearer ${accessToken}`,
                 "Content-Type": "application/json",
