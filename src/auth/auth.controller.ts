@@ -32,8 +32,8 @@ export class AuthController {
 		res.setCookie('access_token', tokens.accessToken, {
 			httpOnly: true,
 			path: '/',
-			sameSite: 'lax',                   // allows top-level redirects
-			secure: process.env.NODE_ENV === 'production',
+			sameSite: 'none',                   // allows top-level redirects
+			secure: true,
 			maxAge: 60 * 15,                   // 15 minutes
 		});
 
@@ -41,8 +41,8 @@ export class AuthController {
 		res.setCookie('refresh_token', tokens.refreshToken, {
 			httpOnly: true,
 			path: '/',
-			sameSite: 'lax',
-			secure: process.env.NODE_ENV === 'production',
+			sameSite: 'none',
+			secure: true,
 			maxAge: 60 * 60 * 24 * 30,         // 30 days
 		});
 
@@ -62,8 +62,8 @@ export class AuthController {
 		res.setCookie('access_token', tokens.accessToken, {
 			httpOnly: true,
 			path: '/',
-			sameSite: 'lax',                   // allows top-level redirects
-			secure: process.env.NODE_ENV === 'production',
+			sameSite: 'none',                   // allows top-level redirects
+			secure: true,
 			maxAge: 60 * 15,                   // 15 minutes
 		});
 
@@ -71,8 +71,8 @@ export class AuthController {
 		res.setCookie('refresh_token', tokens.refreshToken, {
 			httpOnly: true,
 			path: '/',
-			sameSite: 'lax',
-			secure: process.env.NODE_ENV === 'production',
+			sameSite: 'none',
+			secure: true,
 			maxAge: 60 * 60 * 24 * 30,         // 30 days
 		});
 
@@ -80,34 +80,27 @@ export class AuthController {
 		return { message: 'Logged in' };
 	}
 
-	@Post('refresh')
-	async refresh(
-		@Req() req: FastifyRequest,
-		@Res({ passthrough: true }) res: FastifyReply
-	) {
-		const refreshToken = req.cookies.refreshToken;
-		if (!refreshToken) throw new UnauthorizedException('Missing refresh token');
+	@Post("refresh")
+	async refresh(@Req() req: FastifyRequest, @Res({ passthrough: true }) res: FastifyReply) {
+		const refreshToken = req.cookies.refresh_token;
+		if (!refreshToken) throw new UnauthorizedException("Missing refresh token");
 
-		let payload: any;
-		try {
-			payload = this.jwtService.verify(refreshToken, { secret: process.env.JWT_REFRESH_SECRET });
-		} catch {
-			throw new UnauthorizedException('Invalid refresh token');
-		}
+		const payload = this.jwtService.verify(refreshToken, {
+			secret: process.env.JWT_REFRESH_SECRET,
+		});
 
 		const tokens = await this.authService.refresh(payload.sub);
 
-		res.setCookie('refresh_token', tokens.refreshToken, {
+		// Set new access_token cookie (short-lived)
+		res.setCookie("access_token", tokens.accessToken, {
 			httpOnly: true,
-			secure: process.env.NODE_ENV === 'production', // allow local dev
-			sameSite: 'lax', // allows redirects & top-level navigation
-			path: '/',        // available site-wide
-			maxAge: 60 * 60 * 24 * 30, // optional: 30 days
+			secure: true,
+			sameSite: "lax", // safe for top-level GET
+			path: "/",
+			maxAge: 60 * 15, // 15 minutes
 		});
 
-		return {
-			accessToken: tokens.accessToken,
-		};
+		return { message: "Access token refreshed" };
 	}
 
 	@Post('accept-invite')
