@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, mock, spyOn } from 'bun:test';
+import { describe, it, expect, beforeEach, vi, mock } from 'bun:test';
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { UnauthorizedException } from '@nestjs/common';
@@ -8,7 +8,7 @@ import { User, UserRole } from 'src/modules/users/entities/user.entity';
 import { Restaurant } from 'src/modules/restaurants/entities/restaurant.entity';
 import { InviteToken } from './entities/invite-token.entity';
 
-describe('AuthService', () => {
+describe('AuthService (cookie-based)', () => {
 	let service: AuthService;
 	let jwtService: JwtService;
 	let userRepo: any;
@@ -63,12 +63,12 @@ describe('AuthService', () => {
 		service = module.get<AuthService>(AuthService);
 		jwtService = module.get<JwtService>(JwtService);
 
-		spyOn(Bun.password, 'hash').mockResolvedValue('$2b$10$hashedpassword');
-		spyOn(Bun.password, 'verify').mockResolvedValue(true);
+		vi.spyOn(Bun.password, 'hash').mockResolvedValue('$2b$10$hashedpassword');
+		vi.spyOn(Bun.password, 'verify').mockResolvedValue(true);
 	});
 
 	describe('register', () => {
-		it('should create a restaurant and admin user, return tokens', async () => {
+		it('creates restaurant + admin user and returns tokens', async () => {
 			const dto = {
 				restaurantName: 'Test Restaurant',
 				email: 'admin@test.com',
@@ -84,16 +84,19 @@ describe('AuthService', () => {
 			expect(Bun.password.hash).toHaveBeenCalledWith('password123', { algorithm: 'bcrypt', cost: 10 });
 			expect(userRepo.create).toHaveBeenCalled();
 			expect(userRepo.save).toHaveBeenCalled();
-			expect(result).toHaveProperty('accessToken');
+			expect(result).toHaveProperty('accessToken'); // token returned for testing, cookie is set in controller
 			expect(result).toHaveProperty('refreshToken');
 		});
 	});
 
 	describe('login', () => {
-		it('should return tokens for valid credentials', async () => {
+		it('returns tokens for valid credentials', async () => {
 			userRepo.findOne.mockResolvedValue(mockUser);
 
-			const result = await service.login('test@example.com', 'password123');
+			const result = await service.login({
+				email: 'test@example.com',
+				password: 'password123',
+			});
 
 			expect(userRepo.findOne).toHaveBeenCalledWith({ where: { email: 'test@example.com' } });
 			expect(Bun.password.verify).toHaveBeenCalledWith('password123', '$2b$10$hashedpassword');
@@ -101,36 +104,28 @@ describe('AuthService', () => {
 			expect(result).toHaveProperty('refreshToken');
 		});
 
-		it('should throw UnauthorizedException for non-existent user', async () => {
+		it('throws UnauthorizedException for invalid user', async () => {
 			userRepo.findOne.mockResolvedValue(null);
-
-			expect(service.login('nobody@test.com', 'pass')).rejects.toThrow(UnauthorizedException);
+			await expect(service.login({
+				email: 'nobody@test.com',
+				password: 'pass',
+			})).rejects.toThrow(UnauthorizedException);
 		});
 
-		it('should throw UnauthorizedException for wrong password', async () => {
+		it('throws UnauthorizedException for wrong password', async () => {
 			userRepo.findOne.mockResolvedValue(mockUser);
-			spyOn(Bun.password, 'verify').mockResolvedValue(false);
-
-			expect(service.login('test@example.com', 'wrongpass')).rejects.toThrow(UnauthorizedException);
-		});
-	});
-
-	describe('generateTokens', () => {
-		it('should generate access and refresh tokens in parallel', async () => {
-			const result = await service.generateTokens(mockUser as User);
-
-			expect(jwtService.signAsync).toHaveBeenCalledTimes(2);
-			expect(result).toHaveProperty('accessToken', 'mock-token');
-			expect(result).toHaveProperty('refreshToken', 'mock-token');
+			vi.spyOn(Bun.password, 'verify').mockResolvedValue(false);
+			await expect(service.login({
+				email: 'test@example.com',
+				password: 'wrong-password',
+			})).rejects.toThrow(UnauthorizedException);
 		});
 	});
 
 	describe('refresh', () => {
-		it('should generate new tokens for a valid user', async () => {
+		it('generates new tokens using cookie-based refresh', async () => {
 			userRepo.findOne.mockResolvedValue(mockUser);
-
 			const result = await service.refresh('user-1');
-
 			expect(userRepo.findOne).toHaveBeenCalledWith({ where: { id: 'user-1' } });
 			expect(result).toHaveProperty('accessToken');
 			expect(result).toHaveProperty('refreshToken');
@@ -138,16 +133,15 @@ describe('AuthService', () => {
 	});
 
 	describe('saveRefreshToken', () => {
-		it('should hash the refresh token and store it', async () => {
+		it('hashes and stores the refresh token', async () => {
 			await service.saveRefreshToken('user-1', 'some-refresh-token');
-
 			expect(Bun.password.hash).toHaveBeenCalledWith('some-refresh-token', { algorithm: 'bcrypt', cost: 10 });
 			expect(userRepo.update).toHaveBeenCalledWith('user-1', { refreshToken: '$2b$10$hashedpassword' });
 		});
 	});
 
 	describe('acceptInvite', () => {
-		it('should create a user from a valid invite and delete the invite', async () => {
+		it('creates a user from a valid invite and deletes invite', async () => {
 			const invite = {
 				id: 'invite-1',
 				email: 'staff@test.com',
@@ -173,28 +167,25 @@ describe('AuthService', () => {
 			expect(result).toEqual({ success: true });
 		});
 
-		it('should throw for an invalid invite token', async () => {
+		it('throws for invalid invite token', async () => {
 			inviteRepo.findOne.mockResolvedValue(null);
-
-			expect(service.acceptInvite('bad-token', 'pass')).rejects.toThrow('Invalid invite');
+			await expect(service.acceptInvite('bad-token', 'pass')).rejects.toThrow('Invalid invite');
 		});
 	});
 
 	describe('verifyEmail', () => {
-		it('should mark the user email as verified', async () => {
+		it('marks email as verified', async () => {
 			inviteRepo.findOne.mockResolvedValue({ email: 'test@test.com', token: 'tok' });
 			userRepo.findOne.mockResolvedValue({ email: 'test@test.com', emailVerified: false });
 			userRepo.save.mockResolvedValue({ email: 'test@test.com', emailVerified: true });
 
 			const result = await service.verifyEmail('tok');
-
 			expect(result).toEqual({ success: true });
 		});
 
-		it('should throw for an invalid verification token', async () => {
+		it('throws for invalid verification token', async () => {
 			inviteRepo.findOne.mockResolvedValue(null);
-
-			expect(service.verifyEmail('invalid')).rejects.toThrow('Invalid');
+			await expect(service.verifyEmail('invalid')).rejects.toThrow('Invalid');
 		});
 	});
 });

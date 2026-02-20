@@ -6,6 +6,7 @@ import { Repository } from 'typeorm';
 import { RegisterDto } from './dto/register.dto';
 import { Restaurant } from 'src/modules/restaurants/entities/restaurant.entity';
 import { InviteToken } from './entities/invite-token.entity';
+import { LoginDto } from './dto/login.dto';
 
 @Injectable()
 export class AuthService {
@@ -20,8 +21,9 @@ export class AuthService {
 
 		@InjectRepository(InviteToken)
 		private inviteRepo: Repository<InviteToken>,
-	) {}
+	) { }
 
+	/** REGISTER NEW USER */
 	async register(dto: RegisterDto) {
 		const restaurant = this.restaurantRepo.create({
 			name: dto.restaurantName,
@@ -40,28 +42,18 @@ export class AuthService {
 		});
 		await this.userRepo.save(user);
 
-		const [accessToken, refreshToken] = await Promise.all([
-			this.jwtService.signAsync(
-				{ sub: user.id, restaurantId: restaurant.id, role: user.role },
-				{ secret: process.env.JWT_SECRET, expiresIn: '15m' },
-			),
-			this.jwtService.signAsync({ sub: user.id }, { secret: process.env.JWT_REFRESH_SECRET, expiresIn: '30d' }),
-		]);
-
-		return { accessToken, refreshToken };
+		return this.generateTokens(user);
 	}
 
-	async login(email: string, password: string) {
-		const user = await this.userRepo.findOne({ where: { email } });
+	/** LOGIN EXISTING USER */
+	async login(dto: LoginDto) {
+		const user = await this.userRepo.findOne({ where: { email: dto.email } });
 		if (!user) throw new UnauthorizedException();
 
-		const valid = await Bun.password.verify(password, user.password);
+		const valid = await Bun.password.verify(dto.password, user.password);
 		if (!valid) throw new UnauthorizedException();
 
-		const tokens = await this.generateTokens(user);
-		await this.saveRefreshToken(user.id, tokens.refreshToken);
-
-		return tokens;
+		return this.generateTokens(user);
 	}
 
 	async generateTokens(user: User) {
@@ -78,7 +70,7 @@ export class AuthService {
 				expiresIn: '15m',
 			}),
 			this.jwtService.signAsync(payload, {
-				secret: process.env.JWT_REFRESH_SECRET,
+				secret: process.env.JWT_SECRET,
 				expiresIn: '30d',
 			}),
 		]);

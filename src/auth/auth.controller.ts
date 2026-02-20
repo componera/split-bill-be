@@ -1,46 +1,51 @@
-import { Controller, Post, Body, Res, Req } from '@nestjs/common';
+import { Controller, Post, Body, Res, Req, Get, UseGuards } from '@nestjs/common';
 import { FastifyRequest, FastifyReply } from 'fastify';
 import { AuthService } from './auth.service';
 import { JwtService } from '@nestjs/jwt';
 import { RegisterDto } from './dto/register.dto';
+import { JwtAuthGuard } from './guards/jwt-auth.guard';
+import { LoginDto } from './dto/login.dto';
 
 @Controller('auth')
 export class AuthController {
 	constructor(
 		private authService: AuthService,
 		private jwtService: JwtService,
-	) {}
+	) { }
+
+
+	@Get("me")
+	@UseGuards(JwtAuthGuard)
+	getMe(@Req() req) {
+		return req.user;
+	}
 
 	@Post('register')
-	async register(@Body() dto: RegisterDto, @Res({ passthrough: true }) res: FastifyReply) {
-		const tokens = await this.authService.register(dto);
+	async register(@Body() body: RegisterDto, @Res({ passthrough: true }) res: FastifyReply) {
+		const tokens = await this.authService.register(body);
 
-		res.setCookie('refreshToken', tokens.refreshToken, {
+		res.setCookie('access_token', tokens.accessToken, {
 			httpOnly: true,
-			secure: true,
-			sameSite: 'strict',
-			path: '/auth/refresh',
+			path: '/',
+			sameSite: 'lax',
+			secure: process.env.NODE_ENV === 'production',
 		});
 
-		return {
-			accessToken: tokens.accessToken,
-		};
+		return { message: 'Registered successfully', refreshToken: tokens.refreshToken };
 	}
 
 	@Post('login')
-	async login(@Body() dto: any, @Res({ passthrough: true }) res: FastifyReply) {
-		const tokens = await this.authService.login(dto.email, dto.password);
+	async login(@Body() body: LoginDto, @Res({ passthrough: true }) res: FastifyReply) {
+		const tokens = await this.authService.login(body);
 
-		res.setCookie('refreshToken', tokens.refreshToken, {
+		res.setCookie('access_token', tokens.accessToken, {
 			httpOnly: true,
-			secure: true,
-			sameSite: 'strict',
-			path: '/auth/refresh',
+			path: '/',
+			sameSite: 'lax',
+			secure: process.env.NODE_ENV === 'production',
 		});
 
-		return {
-			accessToken: tokens.accessToken,
-		};
+		return { message: 'Logged in', refreshToken: tokens.refreshToken };
 	}
 
 	@Post('refresh')
