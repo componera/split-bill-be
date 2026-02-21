@@ -1,6 +1,7 @@
 import { Controller, Post, Get, Body, UseGuards, Req } from '@nestjs/common';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 import { SquareService } from './square.service';
+import { SquareLocation } from './entities/square-location.entity';
 
 @Controller('square')
 export class SquareController {
@@ -13,18 +14,19 @@ export class SquareController {
     @UseGuards(JwtAuthGuard)
     @Post('exchange')
     async exchangeCode(
-        @Req() req: any & { user: { restaurantId: string; restaurant: any } },
+        @Req() req: any & { user: { restaurantId: string } },
         @Body() body: { code: string },
     ) {
         if (!body.code) throw new Error('Missing Square OAuth code');
 
-        const { restaurant, restaurantId } = req.user;
+        const { restaurantId } = req.user;
 
         // Exchange code for access token + refresh token
         const tokenData = await this.squareService.exchangeCode(body.code);
 
         // Save locations to DB
-        const locations = await this.squareService.saveLocations(restaurant, tokenData.access_token);
+        // const locations = await this.squareService.saveLocations(restaurant, tokenData.access_token);
+        const locations: SquareLocation[] = [];
 
         // Save auth info to DB
         await this.squareService.saveAuth({
