@@ -40,7 +40,10 @@ async function bootstrap() {
 	});
 
 	app.enableCors({
-		origin: process.env.FRONTEND_URL || true,
+		origin: [
+			'https://www.divvytab.com',
+			'https://divvytab.com',
+		],
 		credentials: true,
 	});
 
