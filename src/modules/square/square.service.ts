@@ -37,11 +37,11 @@ export class SquareService {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
-                client_id: process.env.SQUARE_CLIENT_ID,
-                client_secret: process.env.SQUARE_CLIENT_SECRET,
+                client_id: process.env.SQUARE_APP_ID,
+                client_secret: process.env.SQUARE_APP_SECRET,
                 code,
                 grant_type: 'authorization_code',
-                redirect_uri: `${process.env.NEXT_PUBLIC_APP_URL}/admin/pos`,
+                redirect_uri: `${process.env.FRONTEND_URL}/admin/pos`,
             }),
         });
 
